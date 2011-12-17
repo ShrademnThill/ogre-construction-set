@@ -17,7 +17,7 @@ MainWindow::~MainWindow()
 
 void  MainWindow::initWidget()
 {
-/*
+  /*
   TODO:
     -Recuperer les donnes de la derniere session a l'aide d'un QSetting.
     -Restaurer la position des widgets et autre changement cosmetiques.

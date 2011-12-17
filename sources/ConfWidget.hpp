@@ -4,7 +4,7 @@
 #include <QDialog>
 
 namespace Ui {
-  class ConfWidget;
+class ConfWidget;
 }
 
 class ConfWidget : public QDialog

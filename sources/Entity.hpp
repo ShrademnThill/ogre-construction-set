@@ -8,16 +8,16 @@
 class Entity
 {
 public:
-    Entity();
-    ~Entity();
+  Entity();
+  ~Entity();
 
-    InstModel *       createModel(Model const & model, Ogre::SceneManager * sceneManager);
-    void              deleteItem(Ogre::SceneNode * node);
-    void              load(Ogre::SceneManager * sceneManager);
-    void              unload(Ogre::SceneManager * sceneManager);
+  InstModel *       createModel(Model const & model, Ogre::SceneManager * sceneManager);
+  void              deleteItem(Ogre::SceneNode * node);
+  void              load(Ogre::SceneManager * sceneManager);
+  void              unload(Ogre::SceneManager * sceneManager);
 
 private:
-    QList<InstModel *>  m_modelList;
+  QList<InstModel *>  m_modelList;
 };
 
 #endif // ENTITY_HPP

@@ -1,8 +1,8 @@
 #include "Model.hpp"
 
 Model::Model(QString const & path, QString const & name) :
-  m_path(path),
-  m_name(name)
+  m_name(name),
+  m_path(path)
 {
 }
 

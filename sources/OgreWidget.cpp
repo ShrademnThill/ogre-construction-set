@@ -1,3 +1,7 @@
+#ifndef Q_WS_WIN
+#include <QX11Info>
+#endif
+
 #include "OgreWidget.hpp"
 #include "InstModel.hpp"
 

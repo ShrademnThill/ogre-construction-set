@@ -7,17 +7,17 @@
 class InstModel
 {
 public:
-    InstModel(Model const & model, Ogre::SceneManager * sceneManager);
-    ~InstModel();
+  InstModel(Model const & model, Ogre::SceneManager * sceneManager);
+  ~InstModel();
 
-    Ogre::SceneNode * getRoot();
-    Model const &     getModel() const;
+  Ogre::SceneNode * getRoot();
+  Model const &     getModel() const;
 
-    void  setRoot(Ogre::SceneNode * node);
+  void  setRoot(Ogre::SceneNode * node);
 
 private:
-    Ogre::SceneNode * m_root;
-    Model const &     m_model;
+  Ogre::SceneNode * m_root;
+  Model const &     m_model;
 };
 
 #endif // INSTMODEL_HPP
