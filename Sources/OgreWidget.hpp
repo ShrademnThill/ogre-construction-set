@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <Ogre.h>
+#include "Camera.hpp"
 #include "Model.hpp"
 #include "Entity.hpp"
 
@@ -11,51 +12,50 @@ class OgreWidget : public QWidget
   Q_OBJECT
 
 public:
-  OgreWidget(QWidget *parent = 0);
+  OgreWidget(QWidget * parent = 0);
   ~OgreWidget();
 
   QPaintEngine* paintEngine() const;
-
-  void          addModel(Model const & model);
+  void          addItem(Model const & model);
+  void          changeCurrentEntity(Entity * entity);
 
 public slots:
-  void setBackgroundColor(QColor c);
-  void setCameraPosition(const Ogre::Vector3 &pos);
-
-signals:
-  void cameraPositionChanged(const Ogre::Vector3 &pos);
+  void  setBackgroundColor(QColor c);
 
 protected:
-  virtual void keyPressEvent(QKeyEvent * e);
-  virtual void moveEvent(QMoveEvent * e);
-  virtual void mouseDoubleClickEvent(QMouseEvent * e);
-  virtual void mouseMoveEvent(QMouseEvent * e);
-  virtual void mousePressEvent(QMouseEvent * e);
-  virtual void mouseReleaseEvent(QMouseEvent * e);
-  virtual void paintEvent(QPaintEvent * e);
-  virtual void resizeEvent(QResizeEvent * e);
-  virtual void showEvent(QShowEvent * e);
-  virtual void wheelEvent(QWheelEvent * e);
+  virtual void  moveEvent(QMoveEvent * e);
+
+  virtual void  mouseMoveEvent(QMouseEvent * e);
+  virtual void  mousePressEvent(QMouseEvent * e);
+  virtual void  mouseReleaseEvent(QMouseEvent * e);
+
+  virtual void  keyPressEvent(QKeyEvent * e);
+
+  virtual void  paintEvent(QPaintEvent * e);
+  virtual void  resizeEvent(QResizeEvent * e);
+  virtual void  showEvent(QShowEvent * e);
 
 private:
-  void initOgreSystem();
-  void initResources();
-  void initScene();
+  void  initOgreSystem();
+  void  initResources();
+  void  initScene();
 
-private:
-  static const Ogre::Real turboModifier;
-  static const QPoint invalidMousePoint;
+  void  mouseSelect(QPoint const & pos);
+  void  deleteSelection();
 
-  Ogre::Root          *m_ogreRoot;
-  Ogre::SceneManager  *m_sceneManager;
-  Ogre::RenderWindow  *m_renderWindow;
-  Ogre::Viewport      *m_viewport;
-  Ogre::Camera        *m_camera;
+  static const QPoint InvalidMousePoint;
 
-  QPoint          oldPos;
-  Ogre::SceneNode *selectedNode;
+  Ogre::Root *          m_ogreRoot;
+  Ogre::SceneManager *  m_sceneManager;
+  Ogre::RenderWindow *  m_renderWindow;
+  Ogre::Viewport *      m_viewport;
+  Camera *              m_camera;
 
-  Entity  * m_currentEntity;
+  QPoint            m_oldPos;
+  Ogre::SceneNode * m_selectedNode;
+  bool              m_selecting;
+
+  Entity *  m_currentEntity;
 };
 
 #endif // OGREWIDGET_H

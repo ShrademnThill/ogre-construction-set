@@ -20,17 +20,20 @@ public:
   ~MainWindow();
 
 private slots:
-  void on_actionOptions_triggered();
-  void on_actionLock_triggered(bool);
+  void  on_actionSettings_triggered();
+  void  on_actionLock_triggered(bool);
+  void  on_actionAddModel_triggered();
 
 protected:
   virtual QMenu * createPopupMenu();
 
 private:
-  Ui::MainWindow *ui;
-  OgreWidget *ogreWidget;
-  ConfWidget *confWidget;
-  ModelList *m_modelList;
+  void  initWidget();
+
+  Ui::MainWindow *  ui;
+  OgreWidget *      m_ogreWidget;
+  ConfWidget *      m_confWidget;
+  ModelList *       m_modelList;
 };
 
 #endif // MAINWINDOW_HPP

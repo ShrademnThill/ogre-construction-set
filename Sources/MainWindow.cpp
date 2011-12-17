@@ -5,30 +5,39 @@ MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-  ui->setupUi(this);
-
-  ogreWidget = new OgreWidget;
-  ui->ogreLayout->addWidget(ogreWidget);
-
-  tabifyDockWidget(ui->lightWidget, ui->modelWidget);
-  tabifyDockWidget(ui->modelWidget, ui->entityWidget);
-
-  confWidget = new ConfWidget(this);
-  m_modelList = new ModelList("media", this);
-  ui->modelTableView->setModel(m_modelList);
+  initWidget();
 }
 
 MainWindow::~MainWindow()
 {
   delete ui;
-  delete ogreWidget;
-  delete confWidget;
+  delete m_ogreWidget;
+  delete m_confWidget;
 }
 
-void MainWindow::on_actionOptions_triggered()
+void  MainWindow::initWidget()
 {
-  ogreWidget->addModel(m_modelList->getList().at(27));
-  if (confWidget->exec() == QDialog::Accepted)
+/*
+  TODO:
+    -Recuperer les donnes de la derniere session a l'aide d'un QSetting.
+    -Restaurer la position des widgets et autre changement cosmetiques.
+    -Charger les paths correct pour les models 3d.
+*/
+  ui->setupUi(this);
+  m_ogreWidget = new OgreWidget;
+  setCentralWidget(m_ogreWidget);
+  tabifyDockWidget(ui->lightWidget, ui->modelWidget);
+  tabifyDockWidget(ui->modelWidget, ui->entityWidget);
+  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+
+  m_confWidget = new ConfWidget(this);
+  m_modelList = new ModelList("../data", this);
+  ui->modelTableView->setModel(m_modelList);
+}
+
+void  MainWindow::on_actionSettings_triggered()
+{
+  if (m_confWidget->exec() == QDialog::Accepted)
     {
       ui->statusBar->showMessage("Accepted");
     }
@@ -38,20 +47,13 @@ void MainWindow::on_actionOptions_triggered()
     }
 }
 
-void MainWindow::on_actionLock_triggered(bool locked)
+void  MainWindow::on_actionLock_triggered(bool locked)
 {
-  static bool isAllocated = false;
-  QWidget *   entityTitle;
-  QWidget *   modelTitle;
-  QWidget *   lightTitle;
+  static QWidget *   entityTitle = new QWidget;
+  static QWidget *   modelTitle = new QWidget;
+  static QWidget *   lightTitle = new QWidget;
+  static QWidget *   infoTitle = new QWidget;
 
-  if (isAllocated == false)
-    {
-      entityTitle = new QWidget;
-      modelTitle = new QWidget;
-      lightTitle = new QWidget;
-      isAllocated = false;
-    }
   if (locked == true)
     {
       ui->entityWidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -60,6 +62,9 @@ void MainWindow::on_actionLock_triggered(bool locked)
       ui->modelWidget->setTitleBarWidget(modelTitle);
       ui->lightWidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
       ui->lightWidget->setTitleBarWidget(lightTitle);
+      ui->infoWidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
+      ui->infoWidget->setTitleBarWidget(infoTitle);
+      ui->mainToolBar->setMovable(false);
     }
   else
     {
@@ -69,7 +74,17 @@ void MainWindow::on_actionLock_triggered(bool locked)
       ui->modelWidget->setTitleBarWidget(0);
       ui->lightWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);
       ui->lightWidget->setTitleBarWidget(0);
+      ui->infoWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);
+      ui->infoWidget->setTitleBarWidget(0);
+      ui->mainToolBar->setMovable(true);
     }
+}
+
+void  MainWindow::on_actionAddModel_triggered()
+{
+  QModelIndex idx = ui->modelTableView->selectionModel()->currentIndex();
+
+  m_ogreWidget->addItem(m_modelList->getList().at(idx.row()));
 }
 
 QMenu * MainWindow::createPopupMenu()
