@@ -1,10 +1,12 @@
 #include "MainWindow.hpp"
 #include "ui_mainwindow.h"
+#include "Data.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+  initData();
   initWidget();
 }
 
@@ -15,6 +17,11 @@ MainWindow::~MainWindow()
   delete m_confWidget;
 }
 
+void  MainWindow::initData()
+{
+  m_modelList = new ModelList(Data::getSingleton()->getModelsPath());
+}
+
 void  MainWindow::initWidget()
 {
   /*
@@ -22,7 +29,7 @@ void  MainWindow::initWidget()
     -Recuperer les donnes de la derniere session a l'aide d'un QSetting.
     -Restaurer la position des widgets et autre changement cosmetiques.
     -Charger les paths correct pour les models 3d.
-*/
+  */
   ui->setupUi(this);
   m_ogreWidget = new OgreWidget;
   setCentralWidget(m_ogreWidget);
@@ -31,7 +38,6 @@ void  MainWindow::initWidget()
   setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 
   m_confWidget = new ConfWidget(this);
-  m_modelList = new ModelList("../data", this);
   ui->modelTableView->setModel(m_modelList);
 }
 

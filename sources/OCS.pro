@@ -21,7 +21,9 @@ SOURCES += main.cpp \
     Model.cpp \
     InstModel.cpp \
     Entity.cpp \
-    Camera.cpp
+    Camera.cpp \
+    Data.cpp \
+    RessourcesPathList.cpp
 
 HEADERS += MainWindow.hpp \
     OgreWidget.hpp \
@@ -30,7 +32,9 @@ HEADERS += MainWindow.hpp \
     Model.hpp \
     InstModel.hpp \
     Entity.hpp \
-    Camera.hpp
+    Camera.hpp \
+    Data.hpp \
+    RessourcesPathList.hpp
 
 FORMS += \
     confwidget.ui \
@@ -49,6 +53,9 @@ win32: LIBS += -L$$PWD/../OgreSDK_vc9_v1-7-2/lib/release/ -lOgreMain
 
 win32: INCLUDEPATH += $$PWD/../OgreSDK_vc9_v1-7-2/include/OGRE
 win32: DEPENDPATH += $$PWD/../OgreSDK_vc9_v1-7-2/include/OGRE
+
+#RESOURCES += \
+#    data.qrc
 
 
 

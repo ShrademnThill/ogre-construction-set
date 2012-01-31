@@ -28,12 +28,16 @@ protected:
   virtual QMenu * createPopupMenu();
 
 private:
+  void  initData();
   void  initWidget();
 
   Ui::MainWindow *  ui;
   OgreWidget *      m_ogreWidget;
   ConfWidget *      m_confWidget;
-  ModelList *       m_modelList;
+
+  ModelList *     m_modelList;
+  //LightList *     m_lightList;
+  //EntityList *    m_entityList;
 };
 
 #endif // MAINWINDOW_HPP

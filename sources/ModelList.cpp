@@ -1,10 +1,11 @@
 #include <QDir>
 #include "ModelList.hpp"
-#include <QMessageBox>
-ModelList::ModelList(QString const & path, QObject *parent) :
+
+ModelList::ModelList(QStringList const & paths, QObject *parent) :
   QAbstractTableModel(parent)
 {
-  build(path);
+  for (int idx = 0; idx < paths.size(); ++idx)
+    build(paths[idx], true);
 }
 
 ModelList::~ModelList(void)
@@ -93,7 +94,7 @@ bool ModelList::removeRows(int row, int count, const QModelIndex &)
   return (true);
 }
 
-QList<Model> const & ModelList::getList() const
+QList<Model> const & ModelList::getList(void) const
 {
   return (m_list);
 }
@@ -103,24 +104,29 @@ bool ModelList::isModel(QString const & path) const
   return (!path.isEmpty());
 }
 
-void ModelList::build(QString const & path)
+void ModelList::build(QString const & path, bool rec)
 {
   QDir dir(path);
 
-  if (dir.exists())
+  if (dir.exists() && rec)
     {
-      QStringList filters("*.mesh");
+      QStringList   filters("*.mesh");
       QFileInfoList dirInfoList = dir.entryInfoList(QDir::NoDotAndDotDot|QDir::Dirs);
       QFileInfoList fileInfoList = dir.entryInfoList(filters, QDir::NoDotAndDotDot|QDir::Files);
 
       for (int i = 0; i < dirInfoList.size(); ++i)
-        {
-          build(dirInfoList.at(i).filePath());
-        }
+        build(dirInfoList.at(i).filePath(), rec);
       for (int i = 0; i < fileInfoList.size(); ++i)
-        {
-          if (!fileInfoList.at(i).isDir())
-            m_list.insert(0, Model(fileInfoList.at(i).filePath(), fileInfoList.at(i).fileName()));
-        }
+        if (!fileInfoList.at(i).isDir())
+          m_list.insert(0, Model(fileInfoList.at(i).filePath(), fileInfoList.at(i).fileName()));
+    }
+  else if (dir.exists())
+    {
+      QStringList   filters("*.mesh");
+      QFileInfoList fileInfoList = dir.entryInfoList(filters, QDir::NoDotAndDotDot|QDir::Files);
+
+      for (int i = 0; i < fileInfoList.size(); ++i)
+        if (!fileInfoList.at(i).isDir())
+          m_list.insert(0, Model(fileInfoList.at(i).filePath(), fileInfoList.at(i).fileName()));
     }
 }

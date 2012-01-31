@@ -102,12 +102,6 @@ void  OgreWidget::initResources()
 void  OgreWidget::initScene()
 {
   m_sceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
-
-  Ogre::Entity *    robotEntity = m_sceneManager->createEntity("../data/models/ninja.mesh");
-  Ogre::SceneNode * robotNode = m_sceneManager->getRootSceneNode()->createChildSceneNode();
-  robotNode->pitch(Ogre::Radian(Ogre::Degree(0)));
-  robotNode->setPosition(-100, 0, 0);
-  robotNode->attachObject(robotEntity);
 }
 
 void  OgreWidget::setBackgroundColor(QColor c)
