@@ -4,6 +4,10 @@ Data * Data::m_instance = 0;
 
 Data::Data()
 {
+  RessourcesPath  ressourcesPath;
+
+  ressourcesPath.path = "../data/models/";
+  m_ressourcesPathList.append(ressourcesPath);
 }
 
 Data * Data::getSingleton()
@@ -13,12 +17,12 @@ Data * Data::getSingleton()
   return (m_instance);
 }
 
-QStringList & Data::getRessourcesPath()
+QList<RessourcesPath> Data::getRessourcesPathList() const
 {
-  return (m_ressourcesPath);
+  return (m_ressourcesPathList);
 }
 
-QStringList & Data::getModelsPath()
+void  Data::setRessourcesPathList(QList<RessourcesPath> const & ressourcesPathList)
 {
-  return (m_modelsPath);
+  m_ressourcesPathList = ressourcesPathList;
 }

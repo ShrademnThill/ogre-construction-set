@@ -5,6 +5,12 @@ RessourcesPathList::RessourcesPathList(QObject * parent) :
 {
 }
 
+RessourcesPathList::RessourcesPathList(QList<RessourcesPath> list, QObject * parent) :
+  m_list(list),
+  QAbstractTableModel(parent)
+{
+}
+
 RessourcesPathList::~RessourcesPathList(void)
 {
 }
@@ -23,7 +29,7 @@ QVariant RessourcesPathList::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid() || index.row() < 0 || index.row() >= m_list.size())
     return (QVariant());
-  if (role == Qt::DisplayRole)
+  if (role == Qt::DisplayRole || role == Qt::EditRole)
     {
       if (index.column() == 0)
         return (m_list.at(index.row()).path);
@@ -50,12 +56,12 @@ QVariant RessourcesPathList::headerData(int section, Qt::Orientation orientation
   return (QVariant());
 }
 
-Qt::ItemFlags RessourcesPathList::flags(const QModelIndex &index) const
-{
-  if (!index.isValid())
-    return (Qt::ItemIsEnabled);
-  return (QAbstractTableModel::flags(index) | Qt::ItemIsEditable);
-}
+//Qt::ItemFlags RessourcesPathList::flags(const QModelIndex &index) const
+//{
+//  if (!index.isValid())
+//    return (Qt::ItemIsEnabled);
+//  return (QAbstractTableModel::flags(index) | Qt::ItemIsEditable);
+//}
 
 bool RessourcesPathList::setData(const QModelIndex &index, const QVariant &value, int role)
 {
@@ -94,4 +100,9 @@ bool RessourcesPathList::removeRows(int row, int count, const QModelIndex &)
 QList<RessourcesPath> const & RessourcesPathList::getList(void) const
 {
   return (m_list);
+}
+
+void  RessourcesPathList::setList(QList<RessourcesPath> const & list)
+{
+  m_list = list;
 }

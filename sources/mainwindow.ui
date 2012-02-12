@@ -50,6 +50,7 @@
     </property>
     <addaction name="actionAddModel"/>
     <addaction name="separator"/>
+    <addaction name="actionRefresh"/>
     <addaction name="actionLock"/>
     <addaction name="actionSettings"/>
    </widget>
@@ -70,6 +71,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAddModel"/>
+   <addaction name="actionAddEntity"/>
+   <addaction name="actionDeleteEntity"/>
+   <addaction name="actionLoadEntity"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="modelWidget">
@@ -91,6 +95,9 @@
       <widget class="QTableView" name="modelTableView">
        <property name="frameShape">
         <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="alternatingRowColors">
         <bool>true</bool>
@@ -175,11 +182,20 @@
        <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
+       <property name="verticalScrollMode">
+        <enum>QAbstractItemView::ScrollPerPixel</enum>
+       </property>
+       <property name="horizontalScrollMode">
+        <enum>QAbstractItemView::ScrollPerPixel</enum>
+       </property>
        <attribute name="horizontalHeaderStretchLastSection">
         <bool>true</bool>
        </attribute>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
+       </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>17</number>
        </attribute>
       </widget>
      </item>
@@ -214,7 +230,14 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="positionXDoubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="positionXDoubleSpinBox">
+         <property name="minimum">
+          <double>-999999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="positionYLabel">
@@ -224,7 +247,14 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="positionYDoubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="positionYDoubleSpinBox">
+         <property name="minimum">
+          <double>-999999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="positionZLabel">
@@ -234,7 +264,14 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="positionZDoubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="positionZDoubleSpinBox">
+         <property name="minimum">
+          <double>-999999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -248,7 +285,14 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="rotationXDoubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="rotationXDoubleSpinBox">
+         <property name="minimum">
+          <double>-999999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="rotationYLabel">
@@ -258,7 +302,14 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="rotationYDoubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="rotationYDoubleSpinBox">
+         <property name="minimum">
+          <double>-999999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="rotationZLabel">
@@ -268,7 +319,14 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QDoubleSpinBox" name="rotationZDoubleSpinBox"/>
+        <widget class="QDoubleSpinBox" name="rotationZDoubleSpinBox">
+         <property name="minimum">
+          <double>-999999999.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -299,6 +357,32 @@
   <action name="actionAddModel">
    <property name="text">
     <string>Add Model</string>
+   </property>
+  </action>
+  <action name="actionRefresh">
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+  </action>
+  <action name="actionAddEntity">
+   <property name="text">
+    <string>Add Entity</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Entity</string>
+   </property>
+  </action>
+  <action name="actionDeleteEntity">
+   <property name="text">
+    <string>Delete Entity</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete Entity</string>
+   </property>
+  </action>
+  <action name="actionLoadEntity">
+   <property name="text">
+    <string>Load Entity</string>
    </property>
   </action>
  </widget>

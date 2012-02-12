@@ -1,7 +1,12 @@
 #include <QDir>
 #include "ModelList.hpp"
 
-ModelList::ModelList(QStringList const & paths, QObject *parent) :
+ModelList::ModelList(QObject * parent) :
+  QAbstractTableModel(parent)
+{
+}
+
+ModelList::ModelList(QStringList const & paths, QObject * parent) :
   QAbstractTableModel(parent)
 {
   for (int idx = 0; idx < paths.size(); ++idx)
@@ -22,7 +27,7 @@ int ModelList::columnCount(const QModelIndex &) const
   return (2);
 }
 
-QVariant ModelList::data(const QModelIndex &index, int role) const
+QVariant  ModelList::data(const QModelIndex &index, int role) const
 {
   if (!index.isValid() || index.row() < 0 || index.row() >= m_list.size())
     return (QVariant());
@@ -36,7 +41,7 @@ QVariant ModelList::data(const QModelIndex &index, int role) const
   return (QVariant());
 }
 
-QVariant ModelList::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant  ModelList::headerData(int section, Qt::Orientation orientation, int role) const
 {
   if (role != Qt::DisplayRole)
     return (QVariant());
@@ -46,7 +51,7 @@ QVariant ModelList::headerData(int section, Qt::Orientation orientation, int rol
       case 0:
         return (tr("Name"));
       case 1:
-        return (tr("path"));
+        return (tr("Path"));
       default:
         return (QVariant());
       }
@@ -60,7 +65,7 @@ Qt::ItemFlags ModelList::flags(const QModelIndex &index) const
   return (QAbstractTableModel::flags(index) | Qt::ItemIsEditable);
 }
 
-bool ModelList::setData(const QModelIndex &index, const QVariant &value, int role)
+bool  ModelList::setData(const QModelIndex &index, const QVariant &value, int role)
 {
   if (index.isValid() && role == Qt::EditRole)
     {
@@ -76,7 +81,7 @@ bool ModelList::setData(const QModelIndex &index, const QVariant &value, int rol
   return (false);
 }
 
-bool ModelList::insertRows(int row, int count, const QModelIndex &)
+bool  ModelList::insertRows(int row, int count, const QModelIndex &)
 {
   beginInsertRows(QModelIndex(), row, row + count - 1);
   for (int idx = 0; idx < count; ++idx)
@@ -85,7 +90,7 @@ bool ModelList::insertRows(int row, int count, const QModelIndex &)
   return (true);
 }
 
-bool ModelList::removeRows(int row, int count, const QModelIndex &)
+bool  ModelList::removeRows(int row, int count, const QModelIndex &)
 {
   beginRemoveRows(QModelIndex(), row, row + count - 1);
   for (int idx = 0; idx < count; ++idx)
@@ -99,12 +104,12 @@ QList<Model> const & ModelList::getList(void) const
   return (m_list);
 }
 
-bool ModelList::isModel(QString const & path) const
+bool  ModelList::isModel(QString const & path) const
 {
   return (!path.isEmpty());
 }
 
-void ModelList::build(QString const & path, bool rec)
+void  ModelList::build(QString const & path, bool rec)
 {
   QDir dir(path);
 
@@ -129,4 +134,9 @@ void ModelList::build(QString const & path, bool rec)
         if (!fileInfoList.at(i).isDir())
           m_list.insert(0, Model(fileInfoList.at(i).filePath(), fileInfoList.at(i).fileName()));
     }
+}
+
+void  ModelList::clearList()
+{
+  m_list.clear();
 }

@@ -15,12 +15,18 @@ public:
   OgreWidget(QWidget * parent = 0);
   ~OgreWidget();
 
-  QPaintEngine* paintEngine() const;
-  void          addItem(Model const & model);
-  void          changeCurrentEntity(Entity * entity);
+  QPaintEngine *  paintEngine() const;
+  void            addItem(Model const & model);
+  void            changeCurrentEntity(Entity * entity);
+
+  Ogre::SceneNode * getSelectedNode();
 
 public slots:
   void  setBackgroundColor(QColor c);
+
+signals:
+  void  itemSelected(bool);
+  void  itemMoved();
 
 protected:
   virtual void  moveEvent(QMoveEvent * e);
@@ -53,7 +59,7 @@ private:
 
   QPoint            m_oldPos;
   Ogre::SceneNode * m_selectedNode;
-  bool              m_selecting;
+  Qt::MouseButtons  m_mouseButtonsPressed;
 
   Entity *  m_currentEntity;
 };

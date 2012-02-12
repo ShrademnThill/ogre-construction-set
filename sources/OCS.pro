@@ -23,7 +23,10 @@ SOURCES += main.cpp \
     Entity.cpp \
     Camera.cpp \
     Data.cpp \
-    RessourcesPathList.cpp
+    RessourcesPathList.cpp \
+    EntityList.cpp \
+    EditPathDialog.cpp \
+    EditEntityDialog.cpp
 
 HEADERS += MainWindow.hpp \
     OgreWidget.hpp \
@@ -34,11 +37,16 @@ HEADERS += MainWindow.hpp \
     Entity.hpp \
     Camera.hpp \
     Data.hpp \
-    RessourcesPathList.hpp
+    RessourcesPathList.hpp \
+    EntityList.hpp \
+    EditPathDialog.hpp \
+    EditEntityDialog.hpp
 
 FORMS += \
-    confwidget.ui \
-    mainwindow.ui
+    ConfWidget.ui \
+    MainWindow.ui \
+    EditPathDialog.ui \
+    EditEntityDialog.ui
 
 unix: INCLUDEPATH += /usr/include/OGRE
 unix: CONFIG += link_pkgconfig

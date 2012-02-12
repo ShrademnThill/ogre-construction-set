@@ -18,12 +18,19 @@ public:
   ~ConfWidget();
 
 public slots:
-    void changePage(QListWidgetItem *current, QListWidgetItem *previous);
+    void  changePage(QListWidgetItem * current, QListWidgetItem * previous);
+
+private slots:
+    void  on_addPathButton_clicked();
+    void  on_deletePathButton_clicked();
+    void  on_editPathButton_clicked();
+    void  on_buttonBox_accepted();
+    void  on_buttonBox_rejected();
 
 private:
   Ui::ConfWidget *  ui;
 
-  RessourcesPathList  m_ressourcesPathModelList;
+  RessourcesPathList *  m_ressourcesPathModelList;
 };
 
 #endif // CONFWIDGET_HPP

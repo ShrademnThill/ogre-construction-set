@@ -2,14 +2,19 @@
 #define DATA_HPP
 
 #include <QStringList>
+#include <QList>
+#include "RessourcesPathList.hpp"
+#include "Model.hpp"
+//#include "ModelList.hpp"
 
 class Data
 {
 public:
   static Data * getSingleton();
 
-  QStringList & getRessourcesPath();
-  QStringList & getModelsPath();
+  QList<RessourcesPath>   getRessourcesPathList() const;
+
+  void  setRessourcesPathList(QList<RessourcesPath> const &);
 
 private:
   Data();
@@ -18,8 +23,7 @@ private:
 
   static Data * m_instance;
 
-  QStringList   m_ressourcesPath;
-  QStringList   m_modelsPath;
+  QList<RessourcesPath> m_ressourcesPathList;
 };
 
 #endif // DATA_HPP

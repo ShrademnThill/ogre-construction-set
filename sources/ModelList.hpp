@@ -7,9 +7,9 @@
 
 class ModelList : public QAbstractTableModel
 {
-
 public:
-  ModelList(QStringList const & paths, QObject *parent = 0);
+  ModelList(QObject * parent = 0);
+  ModelList(QStringList const & paths, QObject * parent = 0);
   ~ModelList(void);
 
   int           rowCount(const QModelIndex &parent) const;
@@ -23,11 +23,13 @@ public:
 
   QList<Model> const &  getList(void) const;
 
+  void  build(QString const & path, bool rec);
+  void  clearList();
+
 private:
   QList<Model> m_list;
 
   bool  isModel(QString const & path) const;
-  void  build(QString const & path, bool rec);
 };
 
 #endif // MODELLIST_HPP

@@ -1,38 +1,31 @@
-#ifndef RESSOURCESPATHLIST_HPP
-#define RESSOURCESPATHLIST_HPP
+#ifndef ENTITYLIST_HPP
+#define ENTITYLIST_HPP
 
 #include <QAbstractTableModel>
 #include <QList>
+#include "Entity.hpp"
 
-struct RessourcesPath
-{
-  RessourcesPath(){}
-  QString path;
-  bool    rec;
-};
-
-class RessourcesPathList : public QAbstractTableModel
+class EntityList : public QAbstractTableModel
 {
 public:
-  RessourcesPathList(QObject * parent = 0);
-  RessourcesPathList(QList<RessourcesPath> list, QObject * parent = 0);
-  ~RessourcesPathList(void);
+  EntityList(QObject * parent = 0);
+  ~EntityList(void);
 
   int           rowCount(const QModelIndex &parent) const;
   int           columnCount(const QModelIndex &parent) const;
   QVariant      data(const QModelIndex &index, int role) const;
   QVariant      headerData(int section, Qt::Orientation orientation, int role) const;
-//  Qt::ItemFlags flags(const QModelIndex &index) const;
+  Qt::ItemFlags flags(const QModelIndex &index) const;
   bool          setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
   bool          insertRows(int row, int count, const QModelIndex &index = QModelIndex());
   bool          removeRows(int row, int count, const QModelIndex &index = QModelIndex());
 
-  QList<RessourcesPath> const & getList(void) const;
+  QList<Entity> & getList(void);
 
-  void  setList(QList<RessourcesPath> const &);
+  void  addEntity(Entity const &);
 
 private:
-  QList<RessourcesPath> m_list;
+  QList<Entity> m_list;
 };
 
-#endif // RESSOURCESPATHLIST_HPP
+#endif // ENTITYLIST_HPP

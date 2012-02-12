@@ -4,18 +4,22 @@
 #include <QString>
 #include "Ogre.h"
 
-class Camera : public Ogre::Camera
+class Camera
 {
 public:
-  Camera(Ogre::String const & name, Ogre::SceneManager * sm);
+  Camera(Ogre::Camera * camera);
+  ~Camera();
 
-  Ogre::Real  getZoom(void) const;
+  Ogre::Real      getZoom() const;
+  Ogre::Camera *  getCamera();
+
   void        zoom(Ogre::Real delta);
   void        shift(Ogre::Real deltaX, Ogre::Real deltaY);
   void        rotate(Ogre::Real deltaX, Ogre::Real deltaY);
 
 private:
-  Ogre::Real m_zoom;
+  Ogre::Camera *  m_camera;
+  Ogre::Real      m_zoom;
 };
 
 #endif // CAMERA_HPP

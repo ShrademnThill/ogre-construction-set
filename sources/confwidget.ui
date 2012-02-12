@@ -96,20 +96,50 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QTableView" name="pathTableView"/>
+           <widget class="QTableView" name="pathTableView">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="verticalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+            <property name="horizontalScrollMode">
+             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            </property>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>17</number>
+            </attribute>
+           </widget>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QToolButton" name="addPathButton">
+             <widget class="QPushButton" name="addPathButton">
               <property name="text">
-               <string>Add</string>
+               <string>Add Path</string>
               </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonTextBesideIcon</enum>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="editPathButton">
+              <property name="text">
+               <string>Edit Path</string>
               </property>
-              <property name="arrowType">
-               <enum>Qt::DownArrow</enum>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="deletePathButton">
+              <property name="text">
+               <string>Delete Path</string>
               </property>
              </widget>
             </item>
@@ -156,8 +186,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>431</x>
+     <y>390</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
@@ -172,8 +202,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>363</x>
+     <y>390</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>

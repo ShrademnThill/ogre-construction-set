@@ -1,6 +1,7 @@
 #include "Entity.hpp"
 
-Entity::Entity()
+Entity::Entity(QString const & name) :
+  m_name(name)
 {
 }
 
@@ -23,13 +24,23 @@ void  Entity::deleteItem(Ogre::SceneNode * node)
       delete m_modelList.takeAt(i);
 }
 
-void  Entity::load(Ogre::SceneManager * sceneManager)
+void  Entity::load(Ogre::SceneManager * sceneManager) const
 {
   for (int i = 0; i < m_modelList.size(); ++i)
     sceneManager->getRootSceneNode()->addChild(m_modelList[i]->getRoot());
 }
 
-void  Entity::unload(Ogre::SceneManager * sceneManager)
+void  Entity::unload(Ogre::SceneManager * sceneManager) const
 {
   sceneManager->getRootSceneNode()->removeAllChildren();
+}
+
+void  Entity::setName(QString const & name)
+{
+  m_name = name;
+}
+
+QString const & Entity::getName(void) const
+{
+  return (m_name);
 }
