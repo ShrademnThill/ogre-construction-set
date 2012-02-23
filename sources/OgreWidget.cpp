@@ -4,7 +4,6 @@
 
 #include "OgreWidget.hpp"
 #include "InstModel.hpp"
-#include "OgreWidgetUI.hpp"
 
 const QPoint     OgreWidget::InvalidMousePoint(-1,-1);
 
@@ -52,6 +51,7 @@ void  OgreWidget::initOgreSystem()
 
   Ogre::NameValuePairList viewConfig;
   Ogre::String widgetHandle;
+
 #ifdef Q_WS_WIN
   widgetHandle = Ogre::StringConverter::toString((size_t)winId());
 #else
@@ -59,10 +59,17 @@ void  OgreWidget::initOgreSystem()
 
   widgetHandle = Ogre::StringConverter::toString(reinterpret_cast<unsigned long>(xInfo.display())) +
       ":" + Ogre::StringConverter::toString(static_cast<unsigned int>(xInfo.screen())) +
-      ":" + Ogre::StringConverter::toString(static_cast<unsigned long>(winId()));
+      ":" + Ogre::StringConverter::toString(static_cast<unsigned long>(parentWidget()->winId()));
 #endif
-  viewConfig["externalWindowHandle"] = widgetHandle;
+
+  viewConfig["parentWindowHandle"] = widgetHandle;
   m_renderWindow = m_ogreRoot->createRenderWindow("Ogre rendering window", width(), height(), false, &viewConfig);
+
+#ifndef Q_WS_WIN
+  WId window_id;
+  m_renderWindow->getCustomAttribute("WINDOW", &window_id);
+  create(window_id);
+#endif
 
   m_camera = new Camera(m_sceneManager->createCamera("myCamera"));
   m_camera->shift(0, -250);

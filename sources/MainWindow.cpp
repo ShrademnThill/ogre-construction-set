@@ -25,7 +25,7 @@ void  MainWindow::initWidget()
   */
   ui->setupUi(this);
   //Ajout du widget de rendu
-  m_ogreWidget = new OgreWidget;
+  m_ogreWidget = new OgreWidget(this);
   setCentralWidget(m_ogreWidget);
 
   //Ajout du widget de settings

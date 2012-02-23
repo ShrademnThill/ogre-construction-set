@@ -27,7 +27,7 @@ private:
 
   void getNextColor();
 
-  friend SelectionBuffer;
+  friend class SelectionBuffer;
 
 public:
   MaterialSwitcher();
