@@ -1,14 +1,13 @@
-#include "InstModel.hpp"
+#include "InstEntity.hpp"
 
-InstModel::InstModel(Model const & model, Ogre::SceneNode * node) :
-  m_root(0),
-  m_model(model),
+InstEntity::InstEntity(Entity const & entity, Ogre::SceneNode * node) :
+  m_entity(entity),
   m_position(0, 0, 0)
 {
   load(node);
 }
 
-InstModel::~InstModel()
+InstEntity::~InstEntity()
 {
   if (m_root)
     {
@@ -20,33 +19,33 @@ InstModel::~InstModel()
     }
 }
 
-Ogre::SceneNode * InstModel::getRoot()
+Ogre::SceneNode * InstEntity::getRoot()
 {
   return (m_root);
 }
 
-Model const &     InstModel::getModel() const
+Entity const &  InstEntity::getEntity() const
 {
-  return (m_model);
+  return (m_entity);
 }
 
-void InstModel::setRoot(Ogre::SceneNode * node)
+void  InstEntity::setRoot(Ogre::SceneNode * node)
 {
   m_root = node;
 }
 
-void  InstModel::load(Ogre::SceneNode * node)
+void  InstEntity::load(Ogre::SceneNode * node)
 {
-  Ogre::Entity * entity = node->getCreator()->createEntity(m_model.getPath().toStdString());
-
   m_root = node->createChildSceneNode();
+  m_entity.load(m_root);
   m_root->setPosition(m_position);
   m_root->setOrientation(m_orientaion);
-  m_root->attachObject(entity);
+  m_root->showBoundingBox(true);
 }
 
-void  InstModel::unload(void)
+void  InstEntity::unload(void)
 {
+  m_entity.unload(m_root);
   m_position = m_root->getPosition();
   m_orientaion = m_root->getOrientation();
 }

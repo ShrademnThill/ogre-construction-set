@@ -16,7 +16,7 @@ int EntityList::rowCount(const QModelIndex &) const
 
 int EntityList::columnCount(const QModelIndex &) const
 {
-  return (1);
+  return (2);
 }
 
 QVariant  EntityList::data(const QModelIndex &index, int role) const
@@ -27,8 +27,8 @@ QVariant  EntityList::data(const QModelIndex &index, int role) const
     {
       if (index.column() == 0)
         return (m_list.at(index.row()).getName());
-//      else if (index.column() == 1)
-//        return (m_list.at(index.row()).getPath());
+      else if (index.column() == 1)
+        return (m_list.at(index.row()).isComposed());
     }
   return (QVariant());
 }
@@ -42,8 +42,8 @@ QVariant  EntityList::headerData(int section, Qt::Orientation orientation, int r
       {
       case 0:
         return (tr("Name"));
-//      case 1:
-//        return (tr("Name"));
+      case 1:
+        return (tr("Composed"));
       default:
         return (QVariant());
       }
@@ -63,8 +63,8 @@ bool  EntityList::setData(const QModelIndex &index, const QVariant &value, int r
     {
       if (index.column() == 0)
         m_list[index.row()].setName(value.toString());
-//      else if (index.column() == 1)
-//        m_list[index.row()].setPath(value.toString());
+      else if (index.column() == 1)
+        m_list[index.row()].setComposed(value.toBool());
       else
         return (false);
       emit(dataChanged(index, index));

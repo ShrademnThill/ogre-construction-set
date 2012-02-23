@@ -1,7 +1,8 @@
 #include "Entity.hpp"
 
 Entity::Entity(QString const & name) :
-  m_name(name)
+  m_name(name),
+  m_composed(true)
 {
 }
 
@@ -9,12 +10,14 @@ Entity::~Entity()
 {
 }
 
-InstModel *   Entity::createModel(const Model & model, Ogre::SceneManager * sceneManager)
+void  Entity::createModel(Model const & model, Ogre::SceneManager * sceneManager)
 {
-  InstModel * instModel = new InstModel(model, sceneManager);
+  m_modelList.append(new InstModel(model, sceneManager->getRootSceneNode()));
+}
 
-  m_modelList.append(instModel);
-  return (instModel);
+void  Entity::createEntity(Entity const & entity, Ogre::SceneManager * sceneManager)
+{
+  m_entityList.append(new InstEntity(entity, sceneManager->getRootSceneNode()));
 }
 
 void  Entity::deleteItem(Ogre::SceneNode * node)
@@ -24,15 +27,21 @@ void  Entity::deleteItem(Ogre::SceneNode * node)
       delete m_modelList.takeAt(i);
 }
 
-void  Entity::load(Ogre::SceneManager * sceneManager) const
+void  Entity::load(Ogre::SceneNode * node) const
 {
   for (int i = 0; i < m_modelList.size(); ++i)
-    sceneManager->getRootSceneNode()->addChild(m_modelList[i]->getRoot());
+    m_modelList[i]->load(node);
+  for (int i = 0; i < m_entityList.size(); ++i)
+    m_entityList[i]->load(node);
 }
 
-void  Entity::unload(Ogre::SceneManager * sceneManager) const
+void  Entity::unload(Ogre::SceneNode * node) const
 {
-  sceneManager->getRootSceneNode()->removeAllChildren();
+  for (int i = 0; i < m_modelList.size(); ++i)
+    m_modelList[i]->unload();
+  for (int i = 0; i < m_entityList.size(); ++i)
+    m_entityList[i]->unload();
+  node->removeAllChildren();
 }
 
 void  Entity::setName(QString const & name)
@@ -40,7 +49,27 @@ void  Entity::setName(QString const & name)
   m_name = name;
 }
 
+void  Entity::setComposed(bool composed)
+{
+  m_composed = composed;
+}
+
 QString const & Entity::getName(void) const
 {
   return (m_name);
+}
+
+bool  Entity::isComposed(void) const
+{
+  return (m_composed);
+}
+
+QList<InstModel *> const &  Entity::getModelList(void) const
+{
+  return (m_modelList);
+}
+
+QList<InstEntity *> const & Entity::getEntityList(void) const
+{
+  return (m_entityList);
 }

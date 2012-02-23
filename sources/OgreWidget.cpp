@@ -4,6 +4,7 @@
 
 #include "OgreWidget.hpp"
 #include "InstModel.hpp"
+#include "OgreWidgetUI.hpp"
 
 const QPoint     OgreWidget::InvalidMousePoint(-1,-1);
 
@@ -16,15 +17,13 @@ OgreWidget::OgreWidget(QWidget * parent)
     m_camera(0),
     m_oldPos(InvalidMousePoint),
     m_selectedNode(0),
-    m_mouseButtonsPressed(0)
+    m_mouseButtonsPressed(0),
+    m_selectionBuffer(0),
+    m_currentEntity(0)
 {
   setAttribute(Qt::WA_OpaquePaintEvent);
   setAttribute(Qt::WA_PaintOnScreen);
   setFocusPolicy(Qt::ClickFocus);
-
-  //TEST TEMPORAIRE
-  //L'entite root devra etre instancie dans le la list des entites, et uniquement agree ici.
-  m_currentEntity = new Entity;
 }
 
 OgreWidget::~OgreWidget()
@@ -66,12 +65,16 @@ void  OgreWidget::initOgreSystem()
   m_renderWindow = m_ogreRoot->createRenderWindow("Ogre rendering window", width(), height(), false, &viewConfig);
 
   m_camera = new Camera(m_sceneManager->createCamera("myCamera"));
+  m_camera->shift(0, -250);
+  m_camera->rotate(45, -45);
   m_camera->zoom(-500);
 
   m_viewport = m_renderWindow->addViewport(m_camera->getCamera());
   m_viewport->setBackgroundColour(Ogre::ColourValue(0.5, 0.5, 0.5));
   m_camera->getCamera()->setAspectRatio(Ogre::Real(width()) / Ogre::Real(height()));
   m_camera->getCamera()->setNearClipDistance(Ogre::Real(0.1));
+
+  m_selectionBuffer = new SelectionBuffer(m_sceneManager, m_renderWindow);
 
   initResources();
   initScene();
@@ -148,8 +151,8 @@ void  OgreWidget::mouseMoveEvent(QMouseEvent * e)
             {
               Ogre::Ray                   oldRay = m_camera->getCamera()->getCameraToViewportRay(e->pos().x() / (float)width(), e->pos().y() / (float)height());
               Ogre::Ray                   ray = m_camera->getCamera()->getCameraToViewportRay(m_oldPos.x() / (float)width(), m_oldPos.y() / (float)height());
-              std::pair<bool, Ogre::Real> oldResult = oldRay.intersects(Ogre::Plane(0, 1, 0, 0));
-              std::pair<bool, Ogre::Real> result = ray.intersects(Ogre::Plane(0, 1, 0, 0));
+              std::pair<bool, Ogre::Real> oldResult = oldRay.intersects(Ogre::Plane(0, 1, 0, m_selectedNode->getPosition().y));
+              std::pair<bool, Ogre::Real> result = ray.intersects(Ogre::Plane(0, 1, 0, m_selectedNode->getPosition().y));
 
               if (result.first && oldResult.first)
                 {
@@ -235,7 +238,8 @@ void  OgreWidget::keyPressEvent(QKeyEvent * e)
 
 QPaintEngine *  OgreWidget::paintEngine() const
 {
-  return NULL;
+  return (0);
+  //return QWidget::paintEngine();
 }
 
 void  OgreWidget::paintEvent(QPaintEvent * e)
@@ -286,47 +290,74 @@ void  OgreWidget::showEvent(QShowEvent * e)
 
 void  OgreWidget::mouseSelect(QPoint const & pos)
 {
-  Ogre::Real x = pos.x() / (float)width();
-  Ogre::Real y = pos.y() / (float)height();
+//  Ogre::Real x = pos.x() / (float)width();
+//  Ogre::Real y = pos.y() / (float)height();
 
-  Ogre::Ray ray = m_camera->getCamera()->getCameraToViewportRay(x, y);
-  Ogre::RaySceneQuery * query = m_sceneManager->createRayQuery(ray);
-  Ogre::RaySceneQueryResult & queryResult = query->execute();
-  Ogre::RaySceneQueryResult::iterator queryResultIterator = queryResult.begin();
+//  Ogre::Ray ray = m_camera->getCamera()->getCameraToViewportRay(x, y);
+//  Ogre::RaySceneQuery * query = m_sceneManager->createRayQuery(ray);
+//  Ogre::RaySceneQueryResult & queryResult = query->execute();
+//  Ogre::RaySceneQueryResult::iterator queryResultIterator = queryResult.begin();
+//  //Ogre::PlaneBoundedVolume volume = m_camera->getCameraToViewportBoxVolume();
+//  //Ogre::PlaneBoundedVolumeListSceneQuery * query = m_sceneManager->createPlaneBoundedVolumeQuery(volume);
+//  //Ogre::SceneQueryResult & queryResult = query->execute();
+//  if (m_selectedNode)
+//    m_selectedNode->showBoundingBox(false);
+//  if (queryResultIterator != queryResult.end() && queryResultIterator->movable)
+//    {
+//      m_selectedNode = queryResultIterator->movable->getParentSceneNode();
+//      m_selectedNode->showBoundingBox(true);
+//      m_sceneManager->destroyQuery(query);
+//      emit itemSelected(true);
+//      update();
+//    }
+//  else
+//    {
+//      m_selectedNode = 0;
+//      m_sceneManager->destroyQuery(query);
+//      emit itemSelected(false);
+//      update();
+//    }
 
-  //Ogre::PlaneBoundedVolume volume = m_camera->getCameraToViewportBoxVolume();
-  //Ogre::PlaneBoundedVolumeListSceneQuery * query = m_sceneManager->createPlaneBoundedVolumeQuery(volume);
-  //Ogre::SceneQueryResult & queryResult = query->execute();
+  Ogre::Entity *  selectedEntity = m_selectionBuffer->OnSelectionClick(pos.x(), pos.y());
+
   if (m_selectedNode)
     m_selectedNode->showBoundingBox(false);
-  if (queryResultIterator != queryResult.end() && queryResultIterator->movable)
+  if (selectedEntity)
     {
-      m_selectedNode = queryResultIterator->movable->getParentSceneNode();
+      m_selectedNode = selectedEntity->getParentSceneNode();
       m_selectedNode->showBoundingBox(true);
-      m_sceneManager->destroyQuery(query);
       emit itemSelected(true);
       update();
     }
   else
     {
       m_selectedNode = 0;
-      m_sceneManager->destroyQuery(query);
       emit itemSelected(false);
       update();
     }
 }
 
-void  OgreWidget::changeCurrentEntity(Entity * entity)
+void  OgreWidget::setCurrentEntity(Entity * entity)
 {
-  m_currentEntity->unload(m_sceneManager);
+  if (m_currentEntity)
+    m_currentEntity->unload(m_sceneManager->getRootSceneNode());
   m_currentEntity = entity;
-  m_currentEntity->load(m_sceneManager);
-  update();
+  if (m_sceneManager)
+    {
+      m_currentEntity->load(m_sceneManager->getRootSceneNode());
+      update();
+    }
 }
 
 void  OgreWidget::addItem(Model const & model)
 {
   m_currentEntity->createModel(model, m_sceneManager);
+  update();
+}
+
+void  OgreWidget::addItem(Entity const & entity)
+{
+  m_currentEntity->createEntity(entity, m_sceneManager);
   update();
 }
 
@@ -348,16 +379,10 @@ Ogre::SceneNode * OgreWidget::getSelectedNode()
 /*
   TODO:
     -Surcharger la methode addItem pour ajouter des lights.
-    -Surcharger la methode addItem pour ajouter des entities.
     -Ajouter la methode pour deplacer un Item.
 */
 
 //void  OgreWidget::addItem(Light const & entity)
-//{
-//  update();
-//}
-
-//void  OgreWidget::addItem(Entity const & entity)
 //{
 //  update();
 //}

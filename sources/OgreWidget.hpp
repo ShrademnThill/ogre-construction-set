@@ -6,6 +6,7 @@
 #include "Camera.hpp"
 #include "Model.hpp"
 #include "Entity.hpp"
+#include "SelectionBuffer.hpp"
 
 class OgreWidget : public QWidget
 {
@@ -17,7 +18,8 @@ public:
 
   QPaintEngine *  paintEngine() const;
   void            addItem(Model const & model);
-  void            changeCurrentEntity(Entity * entity);
+  void            addItem(Entity const & entity);
+  void            setCurrentEntity(Entity * entity);
 
   Ogre::SceneNode * getSelectedNode();
 
@@ -60,6 +62,7 @@ private:
   QPoint            m_oldPos;
   Ogre::SceneNode * m_selectedNode;
   Qt::MouseButtons  m_mouseButtonsPressed;
+  SelectionBuffer * m_selectionBuffer;
 
   Entity *  m_currentEntity;
 };

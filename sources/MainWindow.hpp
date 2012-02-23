@@ -6,6 +6,7 @@
 #include "ConfWidget.hpp"
 #include "ModelList.hpp"
 #include "EntityList.hpp"
+#include "CurrentEntityModel.hpp"
 
 namespace Ui
 {
@@ -25,12 +26,12 @@ public:
 private slots:
   void  on_actionSettings_triggered();
   void  on_actionLock_triggered(bool);
-  void  on_actionAddModel_triggered();
+  void  on_actionInstModel_triggered();
+  void  on_actionInstEntity_triggered();
   void  on_actionRefresh_triggered();
 
-  void  on_itemSelected(bool);
-  void  on_itemMoved();
-
+  void  itemSelected(bool);
+  void  itemMoved();
   void  updateItem();
 
   void  on_actionAddEntity_triggered();
@@ -49,6 +50,7 @@ private:
 
   ModelList *       m_modelList;
   EntityList *      m_entityList;
+  Entity *          m_currentEntity;
 };
 
 #endif // MAINWINDOW_HPP

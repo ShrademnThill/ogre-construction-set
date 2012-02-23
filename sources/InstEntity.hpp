@@ -1,17 +1,19 @@
-#ifndef INSTMODEL_HPP
-#define INSTMODEL_HPP
+#ifndef INSTENTITY_HPP
+#define INSTENTITY_HPP
 
 #include <Ogre.h>
-#include "Model.hpp"
+#include "Entity.hpp"
 
-class InstModel
+class Entity;
+
+class InstEntity
 {
 public:
-  InstModel(Model const & model, Ogre::SceneNode * node);
-  ~InstModel();
+  InstEntity(Entity const & entity, Ogre::SceneNode * node);
+  ~InstEntity();
 
   Ogre::SceneNode * getRoot();
-  Model const &     getModel() const;
+  Entity const &    getEntity() const;
 
   void  setRoot(Ogre::SceneNode * node);
 
@@ -20,9 +22,9 @@ public:
 
 private:
   Ogre::SceneNode * m_root;
-  Model const &     m_model;
+  Entity const &    m_entity;
   Ogre::Vector3     m_position;
   Ogre::Quaternion  m_orientaion;
 };
 
-#endif // INSTMODEL_HPP
+#endif // INSTENTITY_HPP

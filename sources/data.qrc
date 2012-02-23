@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icones">
+        <file>data/controls.png</file>
+    </qresource>
+</RCC>
