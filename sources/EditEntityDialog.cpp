@@ -13,7 +13,22 @@ EditEntityDialog::~EditEntityDialog()
   delete ui;
 }
 
-QString  EditEntityDialog::getEntityName() const
+QString  EditEntityDialog::getName(void) const
 {
   return (ui->nameLineEdit->text());
+}
+
+bool  EditEntityDialog::getComposed(void) const
+{
+  return (ui->composedCheckBox->isChecked());
+}
+
+void  EditEntityDialog::setName(QString const & name)
+{
+  ui->nameLineEdit->setText(name);
+}
+
+void  EditEntityDialog::setComposed(bool composed)
+{
+  ui->composedCheckBox->setChecked(composed);
 }

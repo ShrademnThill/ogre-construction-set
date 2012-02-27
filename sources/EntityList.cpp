@@ -50,13 +50,6 @@ QVariant  EntityList::headerData(int section, Qt::Orientation orientation, int r
   return (QVariant());
 }
 
-Qt::ItemFlags EntityList::flags(const QModelIndex &index) const
-{
-  if (!index.isValid())
-    return (Qt::ItemIsEnabled);
-  return (QAbstractTableModel::flags(index) | Qt::ItemIsEditable);
-}
-
 bool  EntityList::setData(const QModelIndex &index, const QVariant &value, int role)
 {
   if (index.isValid() && role == Qt::EditRole)

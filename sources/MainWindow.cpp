@@ -1,7 +1,9 @@
+#include <QColorDialog>
 #include "MainWindow.hpp"
 #include "ui_MainWindow.h"
 #include "Data.hpp"
 #include "EditEntityDialog.hpp"
+#include "EditInstItemDialog.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent),
@@ -34,23 +36,28 @@ void  MainWindow::initWidget()
   //Connection des signaux
   connect(m_ogreWidget, SIGNAL(itemSelected(bool)), this, SLOT(itemSelected(bool)));
   connect(m_ogreWidget, SIGNAL(itemMoved()), this, SLOT(itemMoved()));
-  connect(ui->positionXDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
-  connect(ui->positionYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
-  connect(ui->positionZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
-  connect(ui->rotationXDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
-  connect(ui->rotationYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
-  connect(ui->rotationZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->pXDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->pYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->pZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->oWDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->oXDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->oYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->oZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->sXDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->sYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
+  connect(ui->sZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
 
-//  connect(ui->entityTableView, SIGNAL(activated(QModelIndex)), this, SLOT(selectItem))
-
-//  tabifyDockWidget(ui->lightWidget, ui->modelWidget);
-//  tabifyDockWidget(ui->modelWidget, ui->entityWidget);
 //  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+//  setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+//  setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+//  setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
   QSettings settings("config.ini", QSettings::IniFormat);
 
   restoreGeometry(settings.value("geometry").toByteArray());
   restoreState(settings.value("windowState").toByteArray());
+
+  ui->actionLock->activate(QAction::Trigger);
 
   //Initialisation des listes d'items
   m_modelList = new ModelList(this);
@@ -58,8 +65,9 @@ void  MainWindow::initWidget()
   ui->modelTableView->setModel(m_modelList);
   ui->entityTableView->setModel(m_entityList);
 
-  m_entityList->addEntity(Entity("root entity"));
+  m_entityList->addEntity(Entity("root"));
   m_ogreWidget->setCurrentEntity(&m_entityList->getList()[0]);
+  m_currentEntity = &m_entityList->getList()[0];
 
   refreshData();
 }
@@ -120,7 +128,11 @@ void  MainWindow::on_actionInstModel_triggered()
   QModelIndex idx = ui->modelTableView->selectionModel()->currentIndex();
 
   if (idx.isValid())
-    m_ogreWidget->addItem(m_modelList->getList().at(idx.row()));
+    {
+      m_ogreWidget->addItem(m_modelList->getList().at(idx.row()));
+      delete ui->currentEntityListView->model();
+      ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
+    }
 }
 
 void  MainWindow::on_actionInstEntity_triggered()
@@ -128,7 +140,11 @@ void  MainWindow::on_actionInstEntity_triggered()
   QModelIndex idx = ui->entityTableView->selectionModel()->currentIndex();
 
   if (idx.isValid())
-    m_ogreWidget->addItem(m_entityList->getList().at(idx.row()));
+    {
+      m_ogreWidget->addItem(m_entityList->getList()[idx.row()]);
+      delete ui->currentEntityListView->model();
+      ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
+    }
 }
 
 void  MainWindow::on_actionAddEntity_triggered()
@@ -138,7 +154,25 @@ void  MainWindow::on_actionAddEntity_triggered()
   if (dialog.exec() == QDialog::Accepted)
     {
       m_entityList->insertRow(0);
-      m_entityList->setData(m_entityList->index(0, 0), dialog.getEntityName(), Qt::EditRole);
+      m_entityList->setData(m_entityList->index(0, 0), dialog.getName(), Qt::EditRole);
+      m_entityList->setData(m_entityList->index(0, 1), dialog.getComposed(), Qt::EditRole);
+    }
+}
+
+void  MainWindow::on_actionEditEntity_triggered()
+{
+  EditEntityDialog  dialog(this);
+  QModelIndex       idx = ui->entityTableView->selectionModel()->currentIndex();
+
+  if (idx.isValid())
+    {
+      dialog.setName(m_entityList->getList().at(idx.row()).getName());
+      dialog.setComposed(m_entityList->getList().at(idx.row()).isComposed());
+    }
+  if (dialog.exec() == QDialog::Accepted)
+    {
+      m_entityList->setData(m_entityList->index(idx.row(), 0), dialog.getName(), Qt::EditRole);
+      m_entityList->setData(m_entityList->index(idx.row(), 1), dialog.getComposed(), Qt::EditRole);
     }
 }
 
@@ -151,8 +185,8 @@ void  MainWindow::on_actionLoadEntity_triggered()
       m_currentEntity = &m_entityList->getList()[idx.row()];
       m_ogreWidget->setCurrentEntity(m_currentEntity);
 
-      delete ui->currentEntityTableView->model();
-      ui->currentEntityTableView->setModel(new CurrentEntityModel(m_currentEntity, this));
+      delete ui->currentEntityListView->model();
+      ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
     }
 }
 
@@ -163,45 +197,39 @@ void  MainWindow::on_actionRefresh_triggered()
 
 void  MainWindow::itemSelected(bool selected)
 {
-  Ogre::SceneNode * node = m_ogreWidget->getSelectedNode();
-  ui->infoWidgetContents->setEnabled(selected);
+  (void)selected;
+  itemMoved();
+  //ui->infoWidgetContents->setEnabled(selected);
 
-  if (node)
-    {
-      ui->positionXDoubleSpinBox->setValue(node->getPosition().x);
-      ui->positionYDoubleSpinBox->setValue(node->getPosition().y);
-      ui->positionZDoubleSpinBox->setValue(node->getPosition().z);
-      ui->rotationXDoubleSpinBox->setValue(node->getOrientation().x);
-      ui->rotationYDoubleSpinBox->setValue(node->getOrientation().y);
-      ui->rotationZDoubleSpinBox->setValue(node->getOrientation().z);
-    }
 }
 
 void  MainWindow::itemMoved()
 {
-  Ogre::SceneNode * node = m_ogreWidget->getSelectedNode();
-
-  if (node)
-    {
-      ui->positionXDoubleSpinBox->setValue(node->getPosition().x);
-      ui->positionYDoubleSpinBox->setValue(node->getPosition().y);
-      ui->positionZDoubleSpinBox->setValue(node->getPosition().z);
-      ui->rotationXDoubleSpinBox->setValue(node->getOrientation().x);
-      ui->rotationYDoubleSpinBox->setValue(node->getOrientation().y);
-      ui->rotationZDoubleSpinBox->setValue(node->getOrientation().z);
-    }
+  ui->pXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().x);
+  ui->pYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().y);
+  ui->pZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().z);
+  ui->oWDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().w);
+  ui->oXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().x);
+  ui->oYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().y);
+  ui->oZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().z);
+  ui->sXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().x);
+  ui->sYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().y);
+  ui->sZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().z);
 }
 
 void  MainWindow::updateItem()
 {
-  Ogre::SceneNode * node = m_ogreWidget->getSelectedNode();
-
-  if (node)
-    {
-      node->setPosition(ui->positionXDoubleSpinBox->value(), ui->positionYDoubleSpinBox->value(), ui->positionZDoubleSpinBox->value());
-      node->setOrientation(10, ui->rotationXDoubleSpinBox->value(), ui->rotationYDoubleSpinBox->value(), ui->rotationZDoubleSpinBox->value());
-      m_ogreWidget->update();
-    }
+  m_ogreWidget->getSelection()->setPosition(ui->pXDoubleSpinBox->value(),
+                                            ui->pYDoubleSpinBox->value(),
+                                            ui->pZDoubleSpinBox->value());
+  m_ogreWidget->getSelection()->setOrientation(ui->oWDoubleSpinBox->value(),
+                                               ui->oXDoubleSpinBox->value(),
+                                               ui->oYDoubleSpinBox->value(),
+                                               ui->oZDoubleSpinBox->value());
+  m_ogreWidget->getSelection()->setScale(ui->sXDoubleSpinBox->value(),
+                                         ui->sYDoubleSpinBox->value(),
+                                         ui->sZDoubleSpinBox->value());
+  m_ogreWidget->update();
 }
 
 void    MainWindow::closeEvent(QCloseEvent * event)
@@ -217,7 +245,115 @@ void    MainWindow::closeEvent(QCloseEvent * event)
 QMenu * MainWindow::createPopupMenu()
 {
   QMenu * customMenu = QMainWindow::createPopupMenu();
+
   customMenu->addSeparator();
   customMenu->addAction(ui->actionLock);
   return (customMenu);
+}
+
+void  MainWindow::on_currentEntityListView_activated(QModelIndex const & index)
+{
+  EditInstItemDialog  dialog(this);
+  InstItem * item = m_currentEntity->getItem(index.row());
+  int deltaProba;
+
+  dialog.setInstanciationProbability(item->getInstanciationProbability());
+  dialog.setMaxProbability(m_currentEntity->getInstNothingProbability());
+  if (dialog.exec() == QDialog::Accepted)
+    {
+      deltaProba = dialog.getInstanciationProbability() - item->getInstanciationProbability();
+      item->setInstanciationProbability(dialog.getInstanciationProbability());
+      m_currentEntity->setInstNothingProbability(m_currentEntity->getInstNothingProbability() - deltaProba);
+    }
+}
+
+void  MainWindow::on_modelTableView_customContextMenuRequested(const QPoint & pos)
+{
+  QMenu * menu = new QMenu(this);
+
+  menu->addAction(ui->actionInstModel);
+  menu->popup(QCursor::pos());
+}
+
+void  MainWindow::on_entityTableView_customContextMenuRequested(const QPoint & pos)
+{
+  QMenu * menu = new QMenu(this);
+
+  menu->addAction(ui->actionInstEntity);
+  menu->addAction(ui->actionLoadEntity);
+  menu->addAction(ui->actionAddEntity);
+  menu->addAction(ui->actionEditEntity);
+  menu->addAction(ui->actionDeleteEntity);
+  menu->popup(QCursor::pos());
+}
+
+void  MainWindow::on_actionChangeBackgroundColor_triggered()
+{
+  QColor color = QColorDialog::getColor(Qt::white, this);
+
+  if (color.isValid())
+    m_ogreWidget->setBackgroundColor(color);
+}
+
+void  MainWindow::on_nextToolButton_clicked()
+{
+  int index = ui->transformationStackedWidget->currentIndex();
+
+  if (index == 0)
+    {
+      ui->currentInfo->setText(tr("Rotation"));
+      index++;
+    }
+  else if (index == 1)
+    {
+      ui->currentInfo->setText(tr("Scale"));
+      index++;
+    }
+  else if (index == 2)
+    {
+      ui->currentInfo->setText(tr("Position"));
+      index = 0;
+    }
+  ui->transformationStackedWidget->setCurrentIndex(index);
+}
+
+void  MainWindow::on_prevToolButton_clicked()
+{
+  int index = ui->transformationStackedWidget->currentIndex();
+
+  if (index == 0)
+    {
+      ui->currentInfo->setText(tr("Scale"));
+      index = 2;
+    }
+  else if (index == 1)
+    {
+      ui->currentInfo->setText(tr("Position"));
+      index--;
+    }
+  else if (index == 2)
+    {
+      ui->currentInfo->setText(tr("Rotation"));
+      index--;
+    }
+  ui->transformationStackedWidget->setCurrentIndex(index);
+}
+
+void  MainWindow::on_currentEntityListView_clicked(const QModelIndex &index)
+{
+  m_ogreWidget->selectItem(m_currentEntity->getItem(index.row()));
+}
+
+void MainWindow::on_actionDeleteEntity_triggered()
+{
+  QModelIndex       idx = ui->entityTableView->selectionModel()->currentIndex();
+
+  if (idx.isValid() && &m_entityList->getList().at(idx.row()) != m_currentEntity)
+    {
+      m_entityList->getList().takeAt(idx.row());
+      ui->entityTableView->setModel(0);
+      ui->entityTableView->setModel(m_entityList);
+    }
+  else
+    ui->statusBar->showMessage("Cannot delete entity already loaded");
 }

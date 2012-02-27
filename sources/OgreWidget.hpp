@@ -6,9 +6,12 @@
 #include "Camera.hpp"
 #include "Model.hpp"
 #include "Entity.hpp"
+#include "InstItem.hpp"
 #include "SelectionBuffer.hpp"
+#include "SelectionManager.hpp"
+#include "ConstraintManager.hpp"
 
-class OgreWidget : public QWidget
+class OgreWidget : public QFrame
 {
   Q_OBJECT
 
@@ -17,20 +20,25 @@ public:
   ~OgreWidget();
 
   QPaintEngine *  paintEngine() const;
-  void            addItem(Model const & model);
-  void            addItem(Entity const & entity);
-  void            setCurrentEntity(Entity * entity);
 
-  Ogre::SceneNode * getSelectedNode();
+  SelectionManager *  getSelection(void);
 
 public slots:
   void  setBackgroundColor(QColor c);
+  void  setCurrentEntity(Entity * entity);
+  void  selectItem(InstItem * item);
+  void  unselectItem(void);
+  void  addItem(Model const & model);
+  void  addItem(Entity & entity);
 
 signals:
   void  itemSelected(bool);
   void  itemMoved();
 
 protected:
+  virtual void  paintEvent(QPaintEvent * e);
+  virtual void  showEvent(QShowEvent * e);
+  virtual void  resizeEvent(QResizeEvent * e);
   virtual void  moveEvent(QMoveEvent * e);
 
   virtual void  mouseMoveEvent(QMouseEvent * e);
@@ -38,10 +46,7 @@ protected:
   virtual void  mouseReleaseEvent(QMouseEvent * e);
 
   virtual void  keyPressEvent(QKeyEvent * e);
-
-  virtual void  paintEvent(QPaintEvent * e);
-  virtual void  resizeEvent(QResizeEvent * e);
-  virtual void  showEvent(QShowEvent * e);
+  virtual void  keyReleaseEvent(QKeyEvent * e);
 
 private:
   void  initOgreSystem();
@@ -59,10 +64,12 @@ private:
   Ogre::Viewport *      m_viewport;
   Camera *              m_camera;
 
-  QPoint            m_oldPos;
-  Ogre::SceneNode * m_selectedNode;
-  Qt::MouseButtons  m_mouseButtonsPressed;
+  QPoint              m_oldPos;
+  Qt::MouseButtons    m_mouseButtonsPressed;
+  QMap<int, bool> m_keyState;
+
   SelectionBuffer * m_selectionBuffer;
+  SelectionManager  m_selectionManager;
 
   Entity *  m_currentEntity;
 };

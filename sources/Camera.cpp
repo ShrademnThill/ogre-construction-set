@@ -1,7 +1,8 @@
 #include "Camera.hpp"
 
 Camera::Camera(Ogre::Camera * camera) :
-  m_camera(camera)
+  m_camera(camera),
+  m_zoom(500)
 {
 }
 

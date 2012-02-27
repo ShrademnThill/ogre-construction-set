@@ -29,13 +29,24 @@ private slots:
   void  on_actionInstModel_triggered();
   void  on_actionInstEntity_triggered();
   void  on_actionRefresh_triggered();
+  void  on_actionAddEntity_triggered();
+  void  on_actionLoadEntity_triggered();
+  void  on_actionChangeBackgroundColor_triggered();
+  void  on_actionEditEntity_triggered();
+  void  on_actionDeleteEntity_triggered();
+
+  void  on_currentEntityListView_activated(QModelIndex const & index);
+
+  void  on_modelTableView_customContextMenuRequested(const QPoint &pos);
+  void  on_entityTableView_customContextMenuRequested(const QPoint &pos);
 
   void  itemSelected(bool);
   void  itemMoved();
   void  updateItem();
 
-  void  on_actionAddEntity_triggered();
-  void  on_actionLoadEntity_triggered();
+  void  on_nextToolButton_clicked();
+  void  on_prevToolButton_clicked();
+  void  on_currentEntityListView_clicked(const QModelIndex &index);
 
 protected:
   virtual QMenu * createPopupMenu();

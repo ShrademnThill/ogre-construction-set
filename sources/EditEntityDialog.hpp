@@ -15,8 +15,12 @@ public:
   explicit EditEntityDialog(QWidget *parent = 0);
   ~EditEntityDialog();
 
-  QString getEntityName() const;
-  
+  QString getName(void) const;
+  bool    getComposed(void) const;
+
+  void  setName(QString const & name);
+  void  setComposed(bool composed);
+
 private:
   Ui::EditEntityDialog *ui;
 };

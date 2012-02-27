@@ -31,7 +31,11 @@ SOURCES += main.cpp \
     SelectionRenderListener.cpp \
     SelectionBuffer.cpp \
     MaterialSwitcher.cpp \
-    CurrentEntityModel.cpp
+    CurrentEntityModel.cpp \
+    InstItem.cpp \
+    SelectionManager.cpp \
+    ConstraintManager.cpp \
+    EditInstItemDialog.cpp
 
 HEADERS += MainWindow.hpp \
     OgreWidget.hpp \
@@ -50,13 +54,18 @@ HEADERS += MainWindow.hpp \
     SelectionRenderListener.hpp \
     SelectionBuffer.hpp \
     MaterialSwitcher.hpp \
-    CurrentEntityModel.hpp
+    CurrentEntityModel.hpp \
+    InstItem.hpp \
+    SelectionManager.hpp \
+    ConstraintManager.hpp \
+    EditInstItemDialog.hpp
 
 FORMS += \
     ConfWidget.ui \
     MainWindow.ui \
     EditPathDialog.ui \
-    EditEntityDialog.ui
+    EditEntityDialog.ui \
+    EditInstItemDialog.ui
 
 unix: INCLUDEPATH += /usr/include/OGRE
 unix: CONFIG += link_pkgconfig

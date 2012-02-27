@@ -1,30 +1,24 @@
 #ifndef INSTENTITY_HPP
 #define INSTENTITY_HPP
 
-#include <Ogre.h>
+#include "InstItem.hpp"
 #include "Entity.hpp"
 
 class Entity;
 
-class InstEntity
+class InstEntity : public InstItem
 {
 public:
-  InstEntity(Entity const & entity, Ogre::SceneNode * node);
+  InstEntity(Entity &entity, Ogre::SceneNode * node);
   ~InstEntity();
 
-  Ogre::SceneNode * getRoot();
-  Entity const &    getEntity() const;
-
-  void  setRoot(Ogre::SceneNode * node);
+  Entity const &  getEntity() const;
 
   void  load(Ogre::SceneNode * node);
   void  unload(void);
 
 private:
-  Ogre::SceneNode * m_root;
-  Entity const &    m_entity;
-  Ogre::Vector3     m_position;
-  Ogre::Quaternion  m_orientaion;
+  Entity &    m_entity;
 };
 
 #endif // INSTENTITY_HPP

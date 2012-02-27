@@ -8,14 +8,13 @@
 const QPoint     OgreWidget::InvalidMousePoint(-1,-1);
 
 OgreWidget::OgreWidget(QWidget * parent)
-  : QWidget(parent),
+  : QFrame(parent),
     m_ogreRoot(0),
     m_sceneManager(0),
     m_renderWindow(0),
     m_viewport(0),
     m_camera(0),
     m_oldPos(InvalidMousePoint),
-    m_selectedNode(0),
     m_mouseButtonsPressed(0),
     m_selectionBuffer(0),
     m_currentEntity(0)
@@ -39,81 +38,14 @@ OgreWidget::~OgreWidget()
   delete m_camera;
 }
 
-void  OgreWidget::initOgreSystem()
+QPaintEngine *  OgreWidget::paintEngine() const
 {
-  m_ogreRoot = new Ogre::Root();
-
-  Ogre::RenderSystem * renderSystem = m_ogreRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
-  m_ogreRoot->setRenderSystem(renderSystem);
-  m_ogreRoot->initialise(false);
-
-  m_sceneManager = m_ogreRoot->createSceneManager(Ogre::ST_GENERIC);
-
-  Ogre::NameValuePairList viewConfig;
-  Ogre::String widgetHandle;
-
-#ifdef Q_WS_WIN
-  widgetHandle = Ogre::StringConverter::toString((size_t)winId());
-#else
-  QX11Info xInfo = x11Info();
-
-  widgetHandle = Ogre::StringConverter::toString(reinterpret_cast<unsigned long>(xInfo.display())) +
-      ":" + Ogre::StringConverter::toString(static_cast<unsigned int>(xInfo.screen())) +
-      ":" + Ogre::StringConverter::toString(static_cast<unsigned long>(parentWidget()->winId()));
-#endif
-
-  viewConfig["parentWindowHandle"] = widgetHandle;
-  m_renderWindow = m_ogreRoot->createRenderWindow("Ogre rendering window", width(), height(), false, &viewConfig);
-
-#ifndef Q_WS_WIN
-  WId window_id;
-  m_renderWindow->getCustomAttribute("WINDOW", &window_id);
-  create(window_id);
-#endif
-
-  m_camera = new Camera(m_sceneManager->createCamera("myCamera"));
-  m_camera->shift(0, -250);
-  m_camera->rotate(45, -45);
-  m_camera->zoom(-500);
-
-  m_viewport = m_renderWindow->addViewport(m_camera->getCamera());
-  m_viewport->setBackgroundColour(Ogre::ColourValue(0.5, 0.5, 0.5));
-  m_camera->getCamera()->setAspectRatio(Ogre::Real(width()) / Ogre::Real(height()));
-  m_camera->getCamera()->setNearClipDistance(Ogre::Real(0.1));
-
-  m_selectionBuffer = new SelectionBuffer(m_sceneManager, m_renderWindow);
-
-  initResources();
-  initScene();
+  return (0);
 }
 
-void  OgreWidget::initResources()
+SelectionManager *  OgreWidget::getSelection(void)
 {
-  Ogre::ConfigFile cf;
-  cf.load("resources.cfg");
-
-  Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
-
-  Ogre::String secName, typeName, archName;
-  while (seci.hasMoreElements())
-    {
-      secName = seci.peekNextKey();
-      Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
-      Ogre::ConfigFile::SettingsMultiMap::iterator i;
-      for (i = settings->begin(); i != settings->end(); ++i)
-        {
-          typeName = i->first;
-          archName = i->second;
-          Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-                archName, typeName, secName);
-        }
-    }
-  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-}
-
-void  OgreWidget::initScene()
-{
-  m_sceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
+  return (&m_selectionManager);
 }
 
 void  OgreWidget::setBackgroundColor(QColor c)
@@ -125,12 +57,98 @@ void  OgreWidget::setBackgroundColor(QColor c)
       m_viewport->setBackgroundColour(ogreColour);
     }
 }
-/*
-Selection: relacher click gauche sur un objet. *
-Deselection: relacher click gauche dans le vide.
-Deplacement de la camera: click du milieu n'importe ou.
-Deplacement d'un objet: click gauche sur un objet deja selectionne *
-*/
+
+void  OgreWidget::setCurrentEntity(Entity * entity)
+{
+  if (m_currentEntity)
+    m_currentEntity->unload(m_sceneManager->getRootSceneNode());
+  m_currentEntity = entity;
+  if (m_sceneManager)
+    {
+      m_sceneManager->clearScene();
+      m_currentEntity->load(m_sceneManager->getRootSceneNode());
+      update();
+    }
+}
+
+void  OgreWidget::selectItem(InstItem * item)
+{
+  if (!item->getRoot())
+    return ;
+  m_selectionManager.clearSelection();
+  m_selectionManager.addItem(item);
+  emit itemSelected(true);
+  update();
+}
+
+void  OgreWidget::unselectItem()
+{
+  m_selectionManager.clearSelection();
+  emit itemSelected(false);
+  update();
+}
+
+void  OgreWidget::addItem(Model const & model)
+{
+  m_currentEntity->createModel(model, m_sceneManager);
+  update();
+}
+
+void  OgreWidget::addItem(Entity & entity)
+{
+  m_currentEntity->createEntity(entity, m_sceneManager);
+  update();
+}
+
+void  OgreWidget::paintEvent(QPaintEvent * e)
+{
+  m_ogreRoot->_fireFrameStarted();
+  m_renderWindow->update();
+  m_ogreRoot->_fireFrameEnded();
+
+  e->accept();
+}
+
+void  OgreWidget::showEvent(QShowEvent * e)
+{
+  QWidget::showEvent(e);
+
+  if (!m_ogreRoot)
+    {
+      initOgreSystem();
+    }
+}
+
+void  OgreWidget::resizeEvent(QResizeEvent * e)
+{
+  QWidget::resizeEvent(e);
+
+  if (e->isAccepted())
+    {
+      const QSize &newSize = e->size();
+      if(m_renderWindow)
+        {
+          m_renderWindow->resize(newSize.width(), newSize.height());
+          m_renderWindow->windowMovedOrResized();
+        }
+      if (m_camera)
+        {
+          Ogre::Real aspectRatio = Ogre::Real(newSize.width()) / Ogre::Real(newSize.height());
+          m_camera->getCamera()->setAspectRatio(aspectRatio);
+        }
+    }
+}
+
+void  OgreWidget::moveEvent(QMoveEvent * e)
+{
+  QWidget::moveEvent(e);
+
+  if(e->isAccepted() && m_renderWindow)
+    {
+      m_renderWindow->windowMovedOrResized();
+      update();
+    }
+}
 
 void  OgreWidget::mouseMoveEvent(QMouseEvent * e)
 {
@@ -148,25 +166,31 @@ void  OgreWidget::mouseMoveEvent(QMouseEvent * e)
           else
             m_camera->shift(-deltaX, -deltaY);
         }
-      else if (m_mouseButtonsPressed.testFlag(Qt::LeftButton) && m_selectedNode)
+      else if (m_mouseButtonsPressed.testFlag(Qt::LeftButton) && !m_selectionManager.isEmpty())
         {
           if (e->modifiers().testFlag(Qt::AltModifier))
             {
-              m_selectedNode->yaw(Ogre::Degree(deltaX));
+              if (m_keyState.value(Qt::Key_X))
+                m_selectionManager.pitch(Ogre::Degree(deltaX));
+              else if (m_keyState.value(Qt::Key_Y))
+                m_selectionManager.yaw(Ogre::Degree(deltaX));
+              else if (m_keyState.value(Qt::Key_Z))
+                m_selectionManager.roll(Ogre::Degree(deltaX));
             }
           else
             {
+              Ogre::Plane                 plane(0, 1, 0, m_selectionManager.getPosition().y);
               Ogre::Ray                   oldRay = m_camera->getCamera()->getCameraToViewportRay(e->pos().x() / (float)width(), e->pos().y() / (float)height());
               Ogre::Ray                   ray = m_camera->getCamera()->getCameraToViewportRay(m_oldPos.x() / (float)width(), m_oldPos.y() / (float)height());
-              std::pair<bool, Ogre::Real> oldResult = oldRay.intersects(Ogre::Plane(0, 1, 0, m_selectedNode->getPosition().y));
-              std::pair<bool, Ogre::Real> result = ray.intersects(Ogre::Plane(0, 1, 0, m_selectedNode->getPosition().y));
+              std::pair<bool, Ogre::Real> oldResult = oldRay.intersects(plane);
+              std::pair<bool, Ogre::Real> result = ray.intersects(plane);
 
               if (result.first && oldResult.first)
                 {
                   Ogre::Vector3               point;
 
                   point = oldRay.getPoint(oldResult.second) - ray.getPoint(result.second);
-                  m_selectedNode->translate(point);
+                  m_selectionManager.translate(point.x, point.y, point.z);
                 }
             }
           emit itemMoved();
@@ -218,19 +242,9 @@ void  OgreWidget::mouseReleaseEvent(QMouseEvent * e)
     }
 }
 
-void  OgreWidget::moveEvent(QMoveEvent * e)
-{
-  QWidget::moveEvent(e);
-
-  if(e->isAccepted() && m_renderWindow)
-    {
-      m_renderWindow->windowMovedOrResized();
-      update();
-    }
-}
-
 void  OgreWidget::keyPressEvent(QKeyEvent * e)
 {
+  m_keyState[e->key()] = true;
   if (e->key() == Qt::Key_Delete)
     {
       deleteSelection();
@@ -243,56 +257,15 @@ void  OgreWidget::keyPressEvent(QKeyEvent * e)
     }
 }
 
-QPaintEngine *  OgreWidget::paintEngine() const
+void  OgreWidget::keyReleaseEvent(QKeyEvent * e)
 {
-  return (0);
-  //return QWidget::paintEngine();
-}
-
-void  OgreWidget::paintEvent(QPaintEvent * e)
-{
-  m_ogreRoot->_fireFrameStarted();
-  m_renderWindow->update();
-  m_ogreRoot->_fireFrameEnded();
-
-  e->accept();
-}
-
-void  OgreWidget::resizeEvent(QResizeEvent * e)
-{
-  QWidget::resizeEvent(e);
-
-  if (e->isAccepted())
-    {
-      const QSize &newSize = e->size();
-      if(m_renderWindow)
-        {
-          m_renderWindow->resize(newSize.width(), newSize.height());
-          m_renderWindow->windowMovedOrResized();
-        }
-      if (m_camera)
-        {
-          Ogre::Real aspectRatio = Ogre::Real(newSize.width()) / Ogre::Real(newSize.height());
-          m_camera->getCamera()->setAspectRatio(aspectRatio);
-        }
-    }
-}
-
-void  OgreWidget::showEvent(QShowEvent * e)
-{
-  QWidget::showEvent(e);
-
-  if (!m_ogreRoot)
-    {
-      initOgreSystem();
-    }
+  m_keyState[e->key()] = false;
+  e->ignore();
 }
 
 /*
   TODO:
-    -Emetre un signal pour debloquer l'info panel.
     -Implementer la selection de multiples objets.
-    -L'attribut m_selectedNode devrait se transformer en list de node.
 */
 
 void  OgreWidget::mouseSelect(QPoint const & pos)
@@ -307,94 +280,106 @@ void  OgreWidget::mouseSelect(QPoint const & pos)
 //  //Ogre::PlaneBoundedVolume volume = m_camera->getCameraToViewportBoxVolume();
 //  //Ogre::PlaneBoundedVolumeListSceneQuery * query = m_sceneManager->createPlaneBoundedVolumeQuery(volume);
 //  //Ogre::SceneQueryResult & queryResult = query->execute();
-//  if (m_selectedNode)
-//    m_selectedNode->showBoundingBox(false);
-//  if (queryResultIterator != queryResult.end() && queryResultIterator->movable)
-//    {
-//      m_selectedNode = queryResultIterator->movable->getParentSceneNode();
-//      m_selectedNode->showBoundingBox(true);
-//      m_sceneManager->destroyQuery(query);
-//      emit itemSelected(true);
-//      update();
-//    }
-//  else
-//    {
-//      m_selectedNode = 0;
-//      m_sceneManager->destroyQuery(query);
-//      emit itemSelected(false);
-//      update();
-//    }
 
   Ogre::Entity *  selectedEntity = m_selectionBuffer->OnSelectionClick(pos.x(), pos.y());
 
-  if (m_selectedNode)
-    m_selectedNode->showBoundingBox(false);
   if (selectedEntity)
-    {
-      m_selectedNode = selectedEntity->getParentSceneNode();
-      m_selectedNode->showBoundingBox(true);
-      emit itemSelected(true);
-      update();
-    }
+    selectItem(Ogre::any_cast<InstItem *>(selectedEntity->getParentSceneNode()->getUserObjectBindings().getUserAny()));
   else
-    {
-      m_selectedNode = 0;
-      emit itemSelected(false);
-      update();
-    }
-}
-
-void  OgreWidget::setCurrentEntity(Entity * entity)
-{
-  if (m_currentEntity)
-    m_currentEntity->unload(m_sceneManager->getRootSceneNode());
-  m_currentEntity = entity;
-  if (m_sceneManager)
-    {
-      m_currentEntity->load(m_sceneManager->getRootSceneNode());
-      update();
-    }
-}
-
-void  OgreWidget::addItem(Model const & model)
-{
-  m_currentEntity->createModel(model, m_sceneManager);
-  update();
-}
-
-void  OgreWidget::addItem(Entity const & entity)
-{
-  m_currentEntity->createEntity(entity, m_sceneManager);
-  update();
+    unselectItem();
 }
 
 void  OgreWidget::deleteSelection()
 {
-  if (m_selectedNode)
-    {
-      m_currentEntity->deleteItem(m_selectedNode);
-      m_selectedNode = 0;
-      update();
-    }
+  for (int i = 0; i < m_selectionManager.getSelection().size(); ++i)
+    m_currentEntity->deleteItem(m_selectionManager.getSelection()[i]->getRoot());
+  m_selectionManager.clearSelection(true);
 }
 
-Ogre::SceneNode * OgreWidget::getSelectedNode()
+void  OgreWidget::initOgreSystem()
 {
-  return (m_selectedNode);
+  m_ogreRoot = new Ogre::Root();
+
+  Ogre::RenderSystem * renderSystem = m_ogreRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+  m_ogreRoot->setRenderSystem(renderSystem);
+  m_ogreRoot->initialise(false);
+
+  m_sceneManager = m_ogreRoot->createSceneManager(Ogre::ST_GENERIC);
+
+  Ogre::NameValuePairList viewConfig;
+  Ogre::String widgetHandle;
+
+#ifdef Q_WS_WIN
+  widgetHandle = Ogre::StringConverter::toString((size_t)winId());
+  viewConfig["externalWindowHandle"] = widgetHandle;
+#else
+  QX11Info xInfo = x11Info();
+
+  widgetHandle = Ogre::StringConverter::toString(reinterpret_cast<unsigned long>(xInfo.display())) +
+      ":" + Ogre::StringConverter::toString(static_cast<unsigned int>(xInfo.screen())) +
+      ":" + Ogre::StringConverter::toString(static_cast<unsigned long>(parentWidget()->winId()));
+  viewConfig["parentWindowHandle"] = widgetHandle;
+#endif
+
+  m_renderWindow = m_ogreRoot->createRenderWindow("Ogre rendering window", width(), height(), false, &viewConfig);
+
+#ifndef Q_WS_WIN
+  WId window_id;
+  m_renderWindow->getCustomAttribute("WINDOW", &window_id);
+  create(window_id);
+#endif
+
+  m_camera = new Camera(m_sceneManager->createCamera("myCamera"));
+
+  m_camera->getCamera()->setPosition(0, 0, -500);
+  m_camera->getCamera()->lookAt(0, 0, 0);
+  m_camera->getCamera()->setAspectRatio(Ogre::Real(width()) / Ogre::Real(height()));
+  m_camera->getCamera()->setNearClipDistance(Ogre::Real(0.1));
+
+  m_viewport = m_renderWindow->addViewport(m_camera->getCamera());
+  m_viewport->setBackgroundColour(Ogre::ColourValue(0.5, 0.5, 0.5));
+
+  m_selectionBuffer = new SelectionBuffer(m_sceneManager, m_renderWindow);
+
+  initResources();
+  initScene();
+}
+
+void  OgreWidget::initResources()
+{
+  Ogre::ConfigFile cf;
+  cf.load("resources.cfg");
+
+  Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
+
+  Ogre::String secName, typeName, archName;
+  while (seci.hasMoreElements())
+    {
+      secName = seci.peekNextKey();
+      Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
+      Ogre::ConfigFile::SettingsMultiMap::iterator i;
+      for (i = settings->begin(); i != settings->end(); ++i)
+        {
+          typeName = i->first;
+          archName = i->second;
+          Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+                archName, typeName, secName);
+        }
+    }
+  Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+}
+
+void  OgreWidget::initScene()
+{
+  m_sceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
 }
 
 /*
   TODO:
     -Surcharger la methode addItem pour ajouter des lights.
-    -Ajouter la methode pour deplacer un Item.
 */
 
 //void  OgreWidget::addItem(Light const & entity)
-//{
-//  update();
-//}
-
-//void  OgreWidget::moveItem(Ogre::Real x, Ogre::Real y, Ogre::Real z)
 //{
 //  update();
 //}

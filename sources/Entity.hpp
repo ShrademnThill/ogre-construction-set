@@ -16,23 +16,29 @@ public:
   ~Entity();
 
   void  createModel(Model const & model, Ogre::SceneManager * sceneManager);
-  void  createEntity(Entity const & entity, Ogre::SceneManager * sceneManager);
+  void  createEntity(Entity & entity, Ogre::SceneManager * sceneManager);
   void  deleteItem(Ogre::SceneNode * node);
-  void  load(Ogre::SceneNode * node) const;
-  void  unload(Ogre::SceneNode * node) const;
+  void  load(Ogre::SceneNode * node);
+  void  unload(Ogre::SceneNode *);
   void  setName(QString const &);
   void  setComposed(bool);
+  void  setInstNothingProbability(int value);
 
   QString const &             getName(void) const;
   bool                        isComposed(void) const;
   QList<InstModel *> const &  getModelList(void) const;
   QList<InstEntity *> const & getEntityList(void) const;
+  InstItem *                  getItem(int idx);
+  int                         getInstNothingProbability(void) const;
 
 private:
   QString             m_name;
   bool                m_composed;
   QList<InstModel *>  m_modelList;
   QList<InstEntity *> m_entityList;
+  InstModel *         m_instModel;
+  InstEntity *        m_instEntity;
+  int                 m_instNothingProbability;
 };
 
 #endif // ENTITY_HPP
