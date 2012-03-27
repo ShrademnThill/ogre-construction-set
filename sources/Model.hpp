@@ -2,15 +2,12 @@
 #define MODEL_HPP
 
 #include <QString>
+#include "Item.hpp"
 
-class Model
+class Model : public Item
 {
-private:
-  QString m_name;
-  QString m_path;
-
 public:
-  Model(QString const & path, QString const & name = "");
+  Model(QString const & path = "", QString const & name = "");
   ~Model(void);
 
   void setName(QString const & name);
@@ -18,6 +15,10 @@ public:
 
   QString const & getName(void) const;
   QString const & getPath(void) const;
+
+private:
+  QString m_name;
+  QString m_path;
 };
 
 #endif // MODEL_HPP

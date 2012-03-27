@@ -1,6 +1,7 @@
+#include <QFileDialog>
 #include "ConfWidget.hpp"
 #include "ui_ConfWidget.h"
-#include "Data.hpp"
+#include "DataManager.hpp"
 #include "EditPathDialog.hpp"
 
 ConfWidget::ConfWidget(QWidget *parent) :
@@ -11,8 +12,11 @@ ConfWidget::ConfWidget(QWidget *parent) :
   connect(ui->optionsList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
           this, SLOT(changePage(QListWidgetItem*, QListWidgetItem*)));
 
-  m_ressourcesPathModelList = new RessourcesPathList(Data::getSingleton()->getRessourcesPathList(), this);
+  m_ressourcesPathModelList = new RessourcesPathList(DataManager::getSingleton()->getRessourcesPathList(), this);
   ui->pathTableView->setModel(m_ressourcesPathModelList);
+  ui->modelPathLineEdit->setText(DataManager::getSingleton()->getModelPath());
+  ui->cameraDistanceSpinBox->setValue(DataManager::getSingleton()->getDefaultCameraDistance());
+  ui->gridSpaceSpinBox->setValue(DataManager::getSingleton()->getGridSpace());
 }
 
 ConfWidget::~ConfWidget()
@@ -20,7 +24,7 @@ ConfWidget::~ConfWidget()
   delete ui;
 }
 
-void  ConfWidget::changePage(QListWidgetItem *current, QListWidgetItem *previous)
+void  ConfWidget::changePage(QListWidgetItem  *current, QListWidgetItem * previous)
 {
   if (!current)
     current = previous;
@@ -63,13 +67,27 @@ void  ConfWidget::on_deletePathButton_clicked()
 
 void  ConfWidget::on_buttonBox_accepted()
 {
-  Data::getSingleton()->setRessourcesPathList(m_ressourcesPathModelList->getList());
+  DataManager::getSingleton()->setRessourcesPathList(m_ressourcesPathModelList->getList());
+  DataManager::getSingleton()->setModelPath(ui->modelPathLineEdit->text());
+  DataManager::getSingleton()->setDefaultCameraDistance(ui->cameraDistanceSpinBox->value());
+  DataManager::getSingleton()->setGridSpace(ui->gridSpaceSpinBox->value());
 }
 
 void  ConfWidget::on_buttonBox_rejected()
 {
   //Reinitialisation
-  m_ressourcesPathModelList->setList(Data::getSingleton()->getRessourcesPathList());
+  m_ressourcesPathModelList->setList(DataManager::getSingleton()->getRessourcesPathList());
   ui->pathTableView->setModel(0);
   ui->pathTableView->setModel(m_ressourcesPathModelList);
+  ui->modelPathLineEdit->setText(DataManager::getSingleton()->getModelPath());
+  ui->cameraDistanceSpinBox->setValue(DataManager::getSingleton()->getDefaultCameraDistance());
+  ui->gridSpaceSpinBox->setValue(DataManager::getSingleton()->getGridSpace());
+}
+
+void  ConfWidget::on_selectDirButton_clicked()
+{
+  QString dir = QFileDialog::getExistingDirectory(this);
+
+  if (!dir.isEmpty())
+    ui->modelPathLineEdit->setText(dir);
 }

@@ -2,8 +2,11 @@
 #include <QX11Info>
 #endif
 
+#include "DataManager.hpp"
 #include "OgreWidget.hpp"
 #include "InstModel.hpp"
+#include "AxisObject.hpp"
+#include "GridObject.hpp"
 
 const QPoint     OgreWidget::InvalidMousePoint(-1,-1);
 
@@ -17,6 +20,10 @@ OgreWidget::OgreWidget(QWidget * parent)
     m_oldPos(InvalidMousePoint),
     m_mouseButtonsPressed(0),
     m_selectionBuffer(0),
+    m_constraintedX(false),
+    m_constraintedY(true),
+    m_constraintedZ(false),
+    m_gridActivated(false),
     m_currentEntity(0)
 {
   setAttribute(Qt::WA_OpaquePaintEvent);
@@ -60,13 +67,16 @@ void  OgreWidget::setBackgroundColor(QColor c)
 
 void  OgreWidget::setCurrentEntity(Entity * entity)
 {
+  unselectItem();
   if (m_currentEntity)
     m_currentEntity->unload(m_sceneManager->getRootSceneNode());
   m_currentEntity = entity;
   if (m_sceneManager)
     {
       m_sceneManager->clearScene();
-      m_currentEntity->load(m_sceneManager->getRootSceneNode());
+      initScene();
+      if (m_currentEntity)
+        m_currentEntity->load(m_sceneManager->getRootSceneNode());
       update();
     }
 }
@@ -77,14 +87,14 @@ void  OgreWidget::selectItem(InstItem * item)
     return ;
   m_selectionManager.clearSelection();
   m_selectionManager.addItem(item);
-  emit itemSelected(true);
+  emit itemSelected();
   update();
 }
 
-void  OgreWidget::unselectItem()
+void  OgreWidget::unselectItem(void)
 {
   m_selectionManager.clearSelection();
-  emit itemSelected(false);
+  emit itemUnselected();
   update();
 }
 
@@ -97,6 +107,56 @@ void  OgreWidget::addItem(Model const & model)
 void  OgreWidget::addItem(Entity & entity)
 {
   m_currentEntity->createEntity(entity, m_sceneManager);
+  update();
+}
+
+void  OgreWidget::constraintX(bool value)
+{
+  Ogre::SceneNode * node = m_sceneManager->getSceneNode("grid");
+
+  m_constraintedX = value;
+  if (value)
+    {
+      node->setOrientation(1, 0, 0, 1);
+      update();
+    }
+}
+
+void  OgreWidget::constraintY(bool value)
+{
+  Ogre::SceneNode * node = m_sceneManager->getSceneNode("grid");
+
+  m_constraintedY = value;
+  if (value)
+    {
+      node->setOrientation(1, 0, 0, 0);
+      update();
+    }
+}
+
+void  OgreWidget::constraintZ(bool value)
+{
+  Ogre::SceneNode * node = m_sceneManager->getSceneNode("grid");
+
+  m_constraintedZ = value;
+  if (value)
+    {
+      node->setOrientation(1, 1, 0, 0);
+      update();
+    }
+}
+
+void  OgreWidget::activeGrid(bool value)
+{
+  m_gridActivated = value;
+}
+
+void  OgreWidget::resetCamera(void)
+{
+  if (m_selectionManager.isEmpty())
+    m_camera->reset();
+  else
+    m_camera->reset(m_selectionManager.getPosition().x, m_selectionManager.getPosition().y, m_selectionManager.getPosition().z);
   update();
 }
 
@@ -161,25 +221,30 @@ void  OgreWidget::mouseMoveEvent(QMouseEvent * e)
         {
           if(e->modifiers().testFlag(Qt::ControlModifier))
             m_camera->zoom(-deltaY);
-          else if (e->modifiers().testFlag(Qt::AltModifier))
+          else if (e->modifiers().testFlag(Qt::ShiftModifier))
             m_camera->rotate(deltaX, -deltaY);
           else
             m_camera->shift(-deltaX, -deltaY);
         }
       else if (m_mouseButtonsPressed.testFlag(Qt::LeftButton) && !m_selectionManager.isEmpty())
         {
-          if (e->modifiers().testFlag(Qt::AltModifier))
-            {
-              if (m_keyState.value(Qt::Key_X))
-                m_selectionManager.pitch(Ogre::Degree(deltaX));
-              else if (m_keyState.value(Qt::Key_Y))
-                m_selectionManager.yaw(Ogre::Degree(deltaX));
-              else if (m_keyState.value(Qt::Key_Z))
-                m_selectionManager.roll(Ogre::Degree(deltaX));
-            }
+          if (m_constraintedX && e->modifiers().testFlag(Qt::ShiftModifier))
+            m_selectionManager.pitch(Ogre::Degree(deltaX));
+          else if (m_constraintedY && e->modifiers().testFlag(Qt::ShiftModifier))
+            m_selectionManager.yaw(Ogre::Degree(deltaX));
+          else if (m_constraintedZ && e->modifiers().testFlag(Qt::ShiftModifier))
+            m_selectionManager.roll(Ogre::Degree(deltaX));
           else
             {
-              Ogre::Plane                 plane(0, 1, 0, m_selectionManager.getPosition().y);
+              Ogre::Plane plane;
+
+              if (m_constraintedX)
+                plane.redefine(Ogre::Vector3(1, 0, 0), m_selectionManager.getPosition());
+              else if (m_constraintedY)
+                plane.redefine(Ogre::Vector3(0, 1, 0), m_selectionManager.getPosition());
+              else if (m_constraintedZ)
+                plane.redefine(Ogre::Vector3(0, 0, 1), m_selectionManager.getPosition());
+
               Ogre::Ray                   oldRay = m_camera->getCamera()->getCameraToViewportRay(e->pos().x() / (float)width(), e->pos().y() / (float)height());
               Ogre::Ray                   ray = m_camera->getCamera()->getCameraToViewportRay(m_oldPos.x() / (float)width(), m_oldPos.y() / (float)height());
               std::pair<bool, Ogre::Real> oldResult = oldRay.intersects(plane);
@@ -230,10 +295,35 @@ void  OgreWidget::mouseReleaseEvent(QMouseEvent * e)
 {
   if (e->button() == Qt::MiddleButton || e->button() == Qt::LeftButton)
     {
-
       m_mouseButtonsPressed &= e->buttons();
-
       m_oldPos = QPoint(InvalidMousePoint);
+
+      if (m_gridActivated)
+        {
+          Ogre::Vector3 pos = m_selectionManager.getPosition();
+          int gridSpace = DataManager::getSingleton()->getGridSpace();
+
+          pos.x = qFloor((pos.x + gridSpace / 2) / gridSpace) * gridSpace;
+          pos.y = qFloor((pos.y + gridSpace / 2) / gridSpace) * gridSpace;
+          pos.z = qFloor((pos.z + gridSpace / 2) / gridSpace) * gridSpace;
+          m_selectionManager.setPosition(pos.x, pos.y, pos.z);
+          emit itemMoved();
+          update();
+        }
+
+      e->accept();
+    }
+  else
+    {
+      e->ignore();
+    }
+}
+
+void  OgreWidget::mouseDoubleClickEvent(QMouseEvent * e)
+{
+  if (e->button() == Qt::LeftButton)
+    {
+      emit itemDoubleClicked();
       e->accept();
     }
   else
@@ -284,7 +374,13 @@ void  OgreWidget::mouseSelect(QPoint const & pos)
   Ogre::Entity *  selectedEntity = m_selectionBuffer->OnSelectionClick(pos.x(), pos.y());
 
   if (selectedEntity)
-    selectItem(Ogre::any_cast<InstItem *>(selectedEntity->getParentSceneNode()->getUserObjectBindings().getUserAny()));
+    {
+      Ogre::SceneNode * node = selectedEntity->getParentSceneNode();
+
+      while (node->getParentSceneNode() != m_sceneManager->getRootSceneNode())
+        node = node->getParentSceneNode();
+      selectItem(Ogre::any_cast<InstItem *>(node->getUserObjectBindings().getUserAny()));
+    }
   else
     unselectItem();
 }
@@ -331,8 +427,7 @@ void  OgreWidget::initOgreSystem()
 
   m_camera = new Camera(m_sceneManager->createCamera("myCamera"));
 
-  m_camera->getCamera()->setPosition(0, 0, -500);
-  m_camera->getCamera()->lookAt(0, 0, 0);
+  m_camera->reset();
   m_camera->getCamera()->setAspectRatio(Ogre::Real(width()) / Ogre::Real(height()));
   m_camera->getCamera()->setNearClipDistance(Ogre::Real(0.1));
 
@@ -371,7 +466,15 @@ void  OgreWidget::initResources()
 
 void  OgreWidget::initScene()
 {
+  Ogre::SceneNode * node = m_sceneManager->getRootSceneNode()->createChildSceneNode("grid");
+
   m_sceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
+
+  Ogre::Real gridSpace = DataManager::getSingleton()->getGridSpace();
+
+  node->attachObject(GridObject::createGrid(m_sceneManager, 1));
+  node->scale(gridSpace, gridSpace, gridSpace);
+  update();
 }
 
 /*

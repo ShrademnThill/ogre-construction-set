@@ -28,13 +28,11 @@ QVariant  CurrentEntityModel::data(const QModelIndex &index, int role) const
     {
       if (index.column() == 0)
         {
-          if (index.row() <  m_entity->getModelList().size())
-            return (QString("model_%1").arg(index.row()));
+          if (index.row() <  m_entity->getEntityList().size())
+            return (QString("entity_%2 (%1)").arg(m_entity->getEntityList().at(index.row())->getEntity().getName()).arg(index.row()));
           else
-            return (QString("entity_%1").arg(index.row()));
+            return (QString("model_%1").arg(index.row() - m_entity->getEntityList().size()));
         }
-//      else if (index.column() == 1)
-//        return ("m_list.at(index.row()).getPath()");
     }
   return (QVariant());
 }

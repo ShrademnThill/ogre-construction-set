@@ -16,7 +16,7 @@ public:
   void  unload(void);
 
 private:
-  Model const &     m_model;
+  Model m_model;
 };
 
 #endif // INSTMODEL_HPP

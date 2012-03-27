@@ -3,7 +3,9 @@
 InstModel::InstModel(Model const & model, Ogre::SceneNode * node) :
   m_model(model)
 {
-  load(node);
+  m_type = ModelType;
+  if (node)
+    load(node);
 }
 
 InstModel::~InstModel()
@@ -28,7 +30,7 @@ void  InstModel::load(Ogre::SceneNode * node)
   m_root->getUserObjectBindings().setUserAny(Ogre::Any(static_cast<InstItem *>(this)));
   m_root->attachObject(entity);
   m_root->setPosition(m_position);
-  m_root->setOrientation(m_orientaion);
+  m_root->setOrientation(m_orientation);
   m_root->setScale(m_scale);
 }
 
@@ -37,7 +39,7 @@ void  InstModel::unload(void)
   if (!m_root)
     return ;
   m_position = m_root->getPosition();
-  m_orientaion = m_root->getOrientation();
+  m_orientation = m_root->getOrientation();
   m_scale = m_root->getScale();
   m_root = 0;
 }

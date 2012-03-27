@@ -31,9 +31,18 @@ public slots:
   void  addItem(Model const & model);
   void  addItem(Entity & entity);
 
+  void  constraintX(bool value);
+  void  constraintY(bool value);
+  void  constraintZ(bool value);
+  void  activeGrid(bool value);
+
+  void  resetCamera(void);
+
 signals:
-  void  itemSelected(bool);
+  void  itemSelected();
+  void  itemUnselected();
   void  itemMoved();
+  void  itemDoubleClicked();
 
 protected:
   virtual void  paintEvent(QPaintEvent * e);
@@ -44,6 +53,7 @@ protected:
   virtual void  mouseMoveEvent(QMouseEvent * e);
   virtual void  mousePressEvent(QMouseEvent * e);
   virtual void  mouseReleaseEvent(QMouseEvent * e);
+  virtual void  mouseDoubleClickEvent(QMouseEvent * e);
 
   virtual void  keyPressEvent(QKeyEvent * e);
   virtual void  keyReleaseEvent(QKeyEvent * e);
@@ -66,10 +76,15 @@ private:
 
   QPoint              m_oldPos;
   Qt::MouseButtons    m_mouseButtonsPressed;
-  QMap<int, bool> m_keyState;
+  QMap<int, bool>     m_keyState;
 
   SelectionBuffer * m_selectionBuffer;
   SelectionManager  m_selectionManager;
+
+  bool  m_constraintedX;
+  bool  m_constraintedY;
+  bool  m_constraintedZ;
+  bool  m_gridActivated;
 
   Entity *  m_currentEntity;
 };

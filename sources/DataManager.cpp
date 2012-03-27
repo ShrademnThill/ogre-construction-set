@@ -7,9 +7,11 @@ DataManager * DataManager::m_instance = 0;
 
 DataManager::DataManager(void)
 {
-  m_modelPath = QDir::currentPath() + "/../data/models/";
+  m_modelPath = "../data/";
   m_entityModel.setHorizontalHeaderLabels(QStringList() << "Name" << "Composed");
   m_entityModel.setItemPrototype(new EntityModelItem);
+  m_defaultCameraDistance = 500;
+  m_gridSpace = 100;
 }
 
 DataManager * DataManager::getSingleton(void)
@@ -44,9 +46,33 @@ QList<Entity *> * DataManager::getEntityList(void)
   return (&m_entityList);
 }
 
+double  DataManager::getDefaultCameraDistance(void) const
+{
+  return (m_defaultCameraDistance);
+}
+double  DataManager::getGridSpace(void) const
+{
+  return (m_gridSpace);
+}
+
 void  DataManager::setRessourcesPathList(QList<RessourcesPath> const & ressourcesPathList)
 {
   m_ressourcesPathList = ressourcesPathList;
+}
+
+void  DataManager::setModelPath(QString const & modelPath)
+{
+  m_modelPath = modelPath;
+}
+
+void  DataManager::setDefaultCameraDistance(double value)
+{
+  m_defaultCameraDistance = value;
+}
+
+void  DataManager::setGridSpace(double value)
+{
+  m_gridSpace = value;
 }
 
 void  DataManager::readTree(QStandardItem * item, int rowCount, QDataStream & in)
@@ -70,7 +96,7 @@ void  DataManager::readTree(QStandardItem * item, int rowCount, QDataStream & in
 
           in >> name;
           in >> count;
-          item->appendRow(QList<QStandardItem *>() << new EntityModelItem(0, name) << new EntityModelItem(0, name));
+          item->appendRow(QList<QStandardItem *>() << new EntityModelItem(0, name) << new EntityModelItem(0));
           readTree(item->child(item->rowCount() - 1), count, in);
         }
     }

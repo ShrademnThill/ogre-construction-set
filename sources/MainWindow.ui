@@ -10,9 +10,6 @@
     <height>768</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>OCS</string>
-  </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow::separator
 {
@@ -40,10 +37,12 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Project</string>
     </property>
-    <addaction name="actionLoad"/>
+    <addaction name="actionNewProject"/>
+    <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -59,19 +58,20 @@
      <addaction name="actionConstraintY"/>
      <addaction name="actionConstraintZ"/>
     </widget>
-    <widget class="QMenu" name="menuTaper_ici">
-     <property name="title">
-      <string>Taper ici</string>
-     </property>
-    </widget>
     <addaction name="actionSettings"/>
-    <addaction name="actionLock"/>
     <addaction name="actionRefresh"/>
     <addaction name="menuConstraint"/>
-    <addaction name="menuTaper_ici"/>
+   </widget>
+   <widget class="QMenu" name="menuInterface">
+    <property name="title">
+     <string>Interface</string>
+    </property>
+    <addaction name="actionLock"/>
+    <addaction name="actionChangeBackgroundColor"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuInterface"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="enabled">
@@ -86,7 +86,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionChangeBackgroundColor"/>
+   <addaction name="actionActiveGrid"/>
+   <addaction name="actionConstraintX"/>
+   <addaction name="actionConstraintY"/>
+   <addaction name="actionConstraintZ"/>
+   <addaction name="actionResetCamera"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="modelWidget">
@@ -105,7 +109,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTableView" name="modelTableView">
+      <widget class="QTreeView" name="modelTreeView">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
@@ -130,14 +134,11 @@
        <property name="horizontalScrollMode">
         <enum>QAbstractItemView::ScrollPerPixel</enum>
        </property>
-       <attribute name="horizontalHeaderStretchLastSection">
+       <property name="animated">
         <bool>true</bool>
-       </attribute>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>17</number>
+       </property>
+       <attribute name="headerDefaultSectionSize">
+        <number>200</number>
        </attribute>
       </widget>
      </item>
@@ -203,7 +204,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTableView" name="entityTableView">
+      <widget class="QTreeView" name="entityTreeView">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
@@ -212,6 +213,12 @@
        </property>
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="dragEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="dragDropMode">
+        <enum>QAbstractItemView::InternalMove</enum>
        </property>
        <property name="alternatingRowColors">
         <bool>true</bool>
@@ -228,15 +235,9 @@
        <property name="horizontalScrollMode">
         <enum>QAbstractItemView::ScrollPerPixel</enum>
        </property>
-       <attribute name="horizontalHeaderStretchLastSection">
+       <property name="animated">
         <bool>true</bool>
-       </attribute>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>17</number>
-       </attribute>
+       </property>
       </widget>
      </item>
     </layout>
@@ -368,7 +369,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="pXDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -406,7 +407,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="pYDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -444,7 +445,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="pZDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -499,7 +500,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="oWDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -540,7 +541,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="oXDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -581,7 +582,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="oYDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -622,7 +623,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="oZDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -680,7 +681,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="sXDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -721,7 +722,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="sYDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -762,7 +763,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="sZDoubleSpinBox">
            <property name="decimals">
-            <number>4</number>
+            <number>3</number>
            </property>
            <property name="minimum">
             <double>-999999999.000000000000000</double>
@@ -811,7 +812,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="currentEntityLabel">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -901,6 +902,9 @@
    <property name="text">
     <string>Active Grid</string>
    </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
   </action>
   <action name="actionConstraintX">
    <property name="checkable">
@@ -909,13 +913,22 @@
    <property name="text">
     <string>Constraint X</string>
    </property>
+   <property name="shortcut">
+    <string>X</string>
+   </property>
   </action>
   <action name="actionConstraintY">
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Constraint Y</string>
+   </property>
+   <property name="shortcut">
+    <string>Y</string>
    </property>
   </action>
   <action name="actionConstraintZ">
@@ -924,6 +937,9 @@
    </property>
    <property name="text">
     <string>Constraint Z</string>
+   </property>
+   <property name="shortcut">
+    <string>Z</string>
    </property>
   </action>
   <action name="actionSave">
@@ -934,9 +950,9 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionLoad">
+  <action name="actionOpen">
    <property name="text">
-    <string>Load</string>
+    <string>Open</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
@@ -966,8 +982,61 @@
     <string>Lock panels</string>
    </property>
   </action>
+  <action name="actionAddGroup">
+   <property name="text">
+    <string>Add Group</string>
+   </property>
+  </action>
+  <action name="actionNewProject">
+   <property name="text">
+    <string>New project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionDeleteGroup">
+   <property name="text">
+    <string>Delete Group</string>
+   </property>
+  </action>
+  <action name="actionRenameGroup">
+   <property name="text">
+    <string>Rename Group</string>
+   </property>
+  </action>
+  <action name="actionResetCamera">
+   <property name="text">
+    <string>Reset Camera</string>
+   </property>
+   <property name="shortcut">
+    <string>C</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

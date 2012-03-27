@@ -3,17 +3,21 @@
 
 #include <QList>
 #include <QString>
+#include <QStringList>
+#include "Item.hpp"
 #include "Model.hpp"
 #include "InstModel.hpp"
 #include "InstEntity.hpp"
 
 class InstEntity;
 
-class Entity
+class Entity : public Item
 {
 public:
   Entity(QString const & name = "");
   ~Entity();
+
+  bool  containEntity(Entity const * entity);
 
   void  createModel(Model const & model, Ogre::SceneManager * sceneManager);
   void  createEntity(Entity & entity, Ogre::SceneManager * sceneManager);
@@ -23,6 +27,7 @@ public:
   void  setName(QString const &);
   void  setComposed(bool);
   void  setInstNothingProbability(int value);
+  void  setTags(QStringList const & tags);
 
   QString const &             getName(void) const;
   bool                        isComposed(void) const;
@@ -30,6 +35,7 @@ public:
   QList<InstEntity *> const & getEntityList(void) const;
   InstItem *                  getItem(int idx);
   int                         getInstNothingProbability(void) const;
+  QStringList const &         getTags(void) const;
 
 private:
   QString             m_name;
@@ -39,6 +45,7 @@ private:
   InstModel *         m_instModel;
   InstEntity *        m_instEntity;
   int                 m_instNothingProbability;
+  QStringList         m_tags;
 };
 
 #endif // ENTITY_HPP

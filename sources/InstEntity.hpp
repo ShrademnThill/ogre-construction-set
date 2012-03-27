@@ -1,6 +1,7 @@
 #ifndef INSTENTITY_HPP
 #define INSTENTITY_HPP
 
+#include <QStringList>
 #include "InstItem.hpp"
 #include "Entity.hpp"
 
@@ -12,7 +13,7 @@ public:
   InstEntity(Entity &entity, Ogre::SceneNode * node);
   ~InstEntity();
 
-  Entity const &  getEntity() const;
+  Entity &  getEntity();
 
   void  load(Ogre::SceneNode * node);
   void  unload(void);

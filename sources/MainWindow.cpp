@@ -1,9 +1,11 @@
 #include <QColorDialog>
+#include <QInputDialog>
 #include "MainWindow.hpp"
 #include "ui_MainWindow.h"
-#include "Data.hpp"
+#include "DataManager.hpp"
 #include "EditEntityDialog.hpp"
 #include "EditInstItemDialog.hpp"
+#include "EntityModelItem.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent),
@@ -19,23 +21,16 @@ MainWindow::~MainWindow()
 
 void  MainWindow::initWidget()
 {
-  /*
-  TODO:
-    -Recuperer les donnes de la derniere session a l'aide d'un QSetting.
-    -Restaurer la position des widgets et autre changement cosmetiques.
-    -Charger les paths correct pour les models 3d.
-  */
-  ui->setupUi(this);
   //Ajout du widget de rendu
   m_ogreWidget = new OgreWidget(this);
+  m_ogreWidget->setObjectName("ogreWidget");
+  ui->setupUi(this);
   setCentralWidget(m_ogreWidget);
 
   //Ajout du widget de settings
   m_confWidget = new ConfWidget(this);
 
   //Connection des signaux
-  connect(m_ogreWidget, SIGNAL(itemSelected(bool)), this, SLOT(itemSelected(bool)));
-  connect(m_ogreWidget, SIGNAL(itemMoved()), this, SLOT(itemMoved()));
   connect(ui->pXDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
   connect(ui->pYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
   connect(ui->pZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
@@ -47,10 +42,11 @@ void  MainWindow::initWidget()
   connect(ui->sYDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
   connect(ui->sZDoubleSpinBox, SIGNAL(editingFinished()), this, SLOT(updateItem()));
 
-//  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-//  setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-//  setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-//  setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+  //Restauration de la configuration
+  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+  setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+  setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+  setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
   QSettings settings("config.ini", QSettings::IniFormat);
 
@@ -59,31 +55,28 @@ void  MainWindow::initWidget()
 
   ui->actionLock->activate(QAction::Trigger);
 
-  //Initialisation des listes d'items
-  m_modelList = new ModelList(this);
-  m_entityList = new EntityList(this);
-  ui->modelTableView->setModel(m_modelList);
-  ui->entityTableView->setModel(m_entityList);
+  //Initialisation du model des models
+  m_fileSystemModel = new QFileSystemModel(this);
 
-  m_entityList->addEntity(Entity("root"));
-  m_ogreWidget->setCurrentEntity(&m_entityList->getList()[0]);
-  m_currentEntity = &m_entityList->getList()[0];
+  m_fileSystemModel->setRootPath(QDir::currentPath());
+  m_fileSystemModel->setNameFilters(QStringList("*.mesh"));
+  m_fileSystemModel->setNameFilterDisables(false);
+  ui->modelTreeView->setModel(m_fileSystemModel);
 
-  refreshData();
+  //Initialisation du model des entity
+  m_entityModel = DataManager::getSingleton()->getEntityModel();
+  ui->entityTreeView->setModel(m_entityModel);
+
+  on_actionNewProject_triggered();
 }
 
 void  MainWindow::refreshData()
 {
-  QList<RessourcesPath> ressourcesPathList = Data::getSingleton()->getRessourcesPathList();
-
-  m_modelList->clearList();
-  for (int i = 0; i < ressourcesPathList.size(); ++i)
-    {
-      m_modelList->build(ressourcesPathList[i].path, ressourcesPathList[i].rec);
-    }
-
-  ui->modelTableView->setModel(0);
-  ui->modelTableView->setModel(m_modelList);
+  ui->modelTreeView->setRootIndex(m_fileSystemModel->index(DataManager::getSingleton()->getModelPath()));
+  ui->currentEntityLabel->setText(m_currentEntity->getName());
+  m_ogreWidget->setCurrentEntity(m_currentEntity);
+  delete ui->currentEntityListView->model();
+  ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
 }
 
 void  MainWindow::on_actionSettings_triggered()
@@ -125,11 +118,13 @@ void  MainWindow::on_actionLock_triggered(bool locked)
 
 void  MainWindow::on_actionInstModel_triggered()
 {
-  QModelIndex idx = ui->modelTableView->selectionModel()->currentIndex();
+  QModelIndex idx = ui->modelTreeView->selectionModel()->currentIndex();
 
   if (idx.isValid())
     {
-      m_ogreWidget->addItem(m_modelList->getList().at(idx.row()));
+      Model model(m_fileSystemModel->fileName(idx), m_fileSystemModel->fileName(idx));
+
+      m_ogreWidget->addItem(model);
       delete ui->currentEntityListView->model();
       ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
     }
@@ -137,56 +132,137 @@ void  MainWindow::on_actionInstModel_triggered()
 
 void  MainWindow::on_actionInstEntity_triggered()
 {
-  QModelIndex idx = ui->entityTableView->selectionModel()->currentIndex();
+  QModelIndex idx = ui->entityTreeView->selectionModel()->currentIndex();
 
   if (idx.isValid())
     {
-      m_ogreWidget->addItem(m_entityList->getList()[idx.row()]);
-      delete ui->currentEntityListView->model();
-      ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
+      Entity * entity = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(idx))->getEntity();
+
+      if (!entity)
+        return ;
+      if (!m_currentEntity->containEntity(entity))
+        {
+          m_ogreWidget->addItem(*entity);
+          delete ui->currentEntityListView->model();
+          ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
+        }
+      else
+        ui->statusBar->showMessage(tr("Cannot instanciate Entity containing the current entity because infinited loop"));
     }
 }
 
 void  MainWindow::on_actionAddEntity_triggered()
 {
   EditEntityDialog  dialog(this);
+  QModelIndex       idx = ui->entityTreeView->selectionModel()->currentIndex();
+  EntityModelItem * item = 0;
 
+  if (!idx.isValid())
+    return ;
+  item = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(idx));
   if (dialog.exec() == QDialog::Accepted)
     {
-      m_entityList->insertRow(0);
-      m_entityList->setData(m_entityList->index(0, 0), dialog.getName(), Qt::EditRole);
-      m_entityList->setData(m_entityList->index(0, 1), dialog.getComposed(), Qt::EditRole);
+      Entity * entity = new Entity;
+
+      entity->setName(dialog.getName());
+      entity->setComposed(dialog.getComposed());
+      entity->setTags(dialog.getFilter());
+      DataManager::getSingleton()->getEntityList()->append(entity);
+      if (!item->getEntity())
+        item->appendRow(QList<QStandardItem *>() << new EntityModelItem(entity) << new EntityModelItem(entity));
+      else
+        m_entityModel->appendRow(QList<QStandardItem *>() << new EntityModelItem(entity) << new EntityModelItem(entity));
     }
 }
 
 void  MainWindow::on_actionEditEntity_triggered()
 {
   EditEntityDialog  dialog(this);
-  QModelIndex       idx = ui->entityTableView->selectionModel()->currentIndex();
+  QModelIndex       idx = ui->entityTreeView->selectionModel()->currentIndex();
+  Entity *          entity = 0;
 
-  if (idx.isValid())
-    {
-      dialog.setName(m_entityList->getList().at(idx.row()).getName());
-      dialog.setComposed(m_entityList->getList().at(idx.row()).isComposed());
-    }
+  if (!idx.isValid())
+    return ;
+  entity = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(idx))->getEntity();
+  if (!entity || entity->isDeleted())
+    return ;
+  dialog.setName(entity->getName());
+  dialog.setComposed(entity->isComposed());
+  dialog.setFilter(entity->getTags());
   if (dialog.exec() == QDialog::Accepted)
     {
-      m_entityList->setData(m_entityList->index(idx.row(), 0), dialog.getName(), Qt::EditRole);
-      m_entityList->setData(m_entityList->index(idx.row(), 1), dialog.getComposed(), Qt::EditRole);
+      entity->setTags(dialog.getFilter());
+      m_entityModel->setData(idx, dialog.getName());
+      m_entityModel->setData(idx.sibling(idx.row(), 1), dialog.getComposed());
     }
+}
+
+void MainWindow::on_actionDeleteEntity_triggered()
+{
+  QModelIndex       idx = ui->entityTreeView->selectionModel()->currentIndex();
+  Entity *          entity = 0;
+
+  if (!idx.isValid())
+    return ;
+  entity = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(idx))->getEntity();
+  if (!entity)
+    return ;
+  if (entity != m_currentEntity && !entity->isDeleted())
+    {
+      entity->setDeleted(true);
+      m_entityModel->removeRow(idx.row(), idx.parent());
+    }
+  else
+    ui->statusBar->showMessage("Cannot delete entity already loaded");
+}
+
+void  MainWindow::on_actionAddGroup_triggered()
+{
+  QString str = QInputDialog::getText(this, tr("Add Group"), tr("Group name:"));
+
+  if (!str.isEmpty())
+    m_entityModel->appendRow(QList<QStandardItem *>() << new EntityModelItem(0, str) << new EntityModelItem(0));
+}
+
+void  MainWindow::on_actionRenameGroup_triggered()
+{
+  QModelIndex       idx = ui->entityTreeView->selectionModel()->currentIndex();
+
+  if (!idx.isValid())
+    return ;
+
+  QString str = QInputDialog::getText(this, tr("Rename Group"), tr("Group name:"));
+
+  if (!str.isEmpty())
+    m_entityModel->setData(idx.sibling(idx.row(), 0), str);
+}
+
+void  MainWindow::on_actionDeleteGroup_triggered()
+{
+  QModelIndex idx = ui->entityTreeView->selectionModel()->currentIndex();
+
+  if (!idx.isValid())
+    return ;
+  if (!m_entityModel->rowCount(idx))
+    m_entityModel->removeRow(idx.row(), idx.parent());
 }
 
 void  MainWindow::on_actionLoadEntity_triggered()
 {
-  QModelIndex     idx = ui->entityTableView->selectionModel()->currentIndex();
+  QModelIndex     idx = ui->entityTreeView->selectionModel()->currentIndex();
 
   if (idx.isValid())
     {
-      m_currentEntity = &m_entityList->getList()[idx.row()];
+      Entity * entity = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(idx))->getEntity();
+
+      if (!entity)
+        return ;
+      m_currentEntity = entity;
       m_ogreWidget->setCurrentEntity(m_currentEntity);
 
       delete ui->currentEntityListView->model();
       ui->currentEntityListView->setModel(new CurrentEntityModel(m_currentEntity, this));
+      ui->currentEntityLabel->setText(m_currentEntity->getName());
     }
 }
 
@@ -195,15 +271,7 @@ void  MainWindow::on_actionRefresh_triggered()
   refreshData();
 }
 
-void  MainWindow::itemSelected(bool selected)
-{
-  (void)selected;
-  itemMoved();
-  //ui->infoWidgetContents->setEnabled(selected);
-
-}
-
-void  MainWindow::itemMoved()
+void  MainWindow::on_ogreWidget_itemSelected()
 {
   ui->pXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().x);
   ui->pYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().y);
@@ -215,6 +283,30 @@ void  MainWindow::itemMoved()
   ui->sXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().x);
   ui->sYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().y);
   ui->sZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().z);
+}
+
+void  MainWindow::on_ogreWidget_itemUnselected()
+{
+  ;
+}
+
+void  MainWindow::on_ogreWidget_itemMoved()
+{
+  ui->pXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().x);
+  ui->pYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().y);
+  ui->pZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getPosition().z);
+  ui->oWDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().w);
+  ui->oXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().x);
+  ui->oYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().y);
+  ui->oZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getOrientation().z);
+  ui->sXDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().x);
+  ui->sYDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().y);
+  ui->sZDoubleSpinBox->setValue(m_ogreWidget->getSelection()->getScale().z);
+}
+
+void  MainWindow::on_ogreWidget_itemDoubleClicked()
+{
+  ui->statusBar->showMessage("Item double clicked!");
 }
 
 void  MainWindow::updateItem()
@@ -232,7 +324,7 @@ void  MainWindow::updateItem()
   m_ogreWidget->update();
 }
 
-void    MainWindow::closeEvent(QCloseEvent * event)
+void  MainWindow::closeEvent(QCloseEvent * event)
 {
   QSettings settings("config.ini", QSettings::IniFormat);
 
@@ -251,7 +343,7 @@ QMenu * MainWindow::createPopupMenu()
   return (customMenu);
 }
 
-void  MainWindow::on_currentEntityListView_activated(QModelIndex const & index)
+void  MainWindow::on_currentEntityListView_doubleClicked(QModelIndex const & index)
 {
   EditInstItemDialog  dialog(this);
   InstItem * item = m_currentEntity->getItem(index.row());
@@ -259,15 +351,17 @@ void  MainWindow::on_currentEntityListView_activated(QModelIndex const & index)
 
   dialog.setInstanciationProbability(item->getInstanciationProbability());
   dialog.setMaxProbability(m_currentEntity->getInstNothingProbability());
+  dialog.setTags(item->getTags());
   if (dialog.exec() == QDialog::Accepted)
     {
       deltaProba = dialog.getInstanciationProbability() - item->getInstanciationProbability();
       item->setInstanciationProbability(dialog.getInstanciationProbability());
       m_currentEntity->setInstNothingProbability(m_currentEntity->getInstNothingProbability() - deltaProba);
+      item->setTags(dialog.getTags());
     }
 }
 
-void  MainWindow::on_modelTableView_customContextMenuRequested(const QPoint & pos)
+void  MainWindow::on_modelTreeView_customContextMenuRequested(const QPoint &)
 {
   QMenu * menu = new QMenu(this);
 
@@ -275,15 +369,44 @@ void  MainWindow::on_modelTableView_customContextMenuRequested(const QPoint & po
   menu->popup(QCursor::pos());
 }
 
-void  MainWindow::on_entityTableView_customContextMenuRequested(const QPoint & pos)
+void  MainWindow::on_entityTreeView_customContextMenuRequested(const QPoint &)
 {
-  QMenu * menu = new QMenu(this);
+  QModelIndex idx = ui->entityTreeView->selectionModel()->currentIndex();
+  QMenu *     menu = new QMenu(this);
+  Entity *    entity = 0;
 
   menu->addAction(ui->actionInstEntity);
   menu->addAction(ui->actionLoadEntity);
   menu->addAction(ui->actionAddEntity);
   menu->addAction(ui->actionEditEntity);
   menu->addAction(ui->actionDeleteEntity);
+  menu->addSeparator();
+  menu->addAction(ui->actionAddGroup);
+  menu->addAction(ui->actionRenameGroup);
+  menu->addAction(ui->actionDeleteGroup);
+  ui->actionInstEntity->setEnabled(false);
+  ui->actionLoadEntity->setEnabled(false);
+  ui->actionEditEntity->setEnabled(false);
+  ui->actionDeleteEntity->setEnabled(false);
+  ui->actionRenameGroup->setEnabled(false);
+  ui->actionDeleteGroup->setEnabled(false);
+  if (idx.isValid())
+    {
+      entity = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(idx))->getEntity();
+      if (entity)
+        {
+          ui->actionInstEntity->setEnabled(true);
+          ui->actionLoadEntity->setEnabled(true);
+          ui->actionEditEntity->setEnabled(true);
+          ui->actionDeleteEntity->setEnabled(true);
+        }
+      else
+        {
+          ui->actionRenameGroup->setEnabled(true);
+          if (!m_entityModel->rowCount(idx))
+            ui->actionDeleteGroup->setEnabled(true);
+        }
+    }
   menu->popup(QCursor::pos());
 }
 
@@ -344,16 +467,101 @@ void  MainWindow::on_currentEntityListView_clicked(const QModelIndex &index)
   m_ogreWidget->selectItem(m_currentEntity->getItem(index.row()));
 }
 
-void MainWindow::on_actionDeleteEntity_triggered()
+void MainWindow::on_actionActiveGrid_triggered(bool checked)
 {
-  QModelIndex       idx = ui->entityTableView->selectionModel()->currentIndex();
-
-  if (idx.isValid() && &m_entityList->getList().at(idx.row()) != m_currentEntity)
-    {
-      m_entityList->getList().takeAt(idx.row());
-      ui->entityTableView->setModel(0);
-      ui->entityTableView->setModel(m_entityList);
-    }
-  else
-    ui->statusBar->showMessage("Cannot delete entity already loaded");
+  m_ogreWidget->activeGrid(checked);
 }
+
+void MainWindow::on_actionConstraintX_triggered(void)
+{
+  m_ogreWidget->constraintX(true);
+  m_ogreWidget->constraintY(false);
+  m_ogreWidget->constraintZ(false);
+  ui->actionConstraintX->setChecked(true);
+  ui->actionConstraintY->setChecked(false);
+  ui->actionConstraintZ->setChecked(false);
+}
+
+void MainWindow::on_actionConstraintY_triggered(void)
+{
+  m_ogreWidget->constraintX(false);
+  m_ogreWidget->constraintY(true);
+  m_ogreWidget->constraintZ(false);
+  ui->actionConstraintX->setChecked(false);
+  ui->actionConstraintY->setChecked(true);
+  ui->actionConstraintZ->setChecked(false);
+}
+
+void MainWindow::on_actionConstraintZ_triggered(void)
+{
+  m_ogreWidget->constraintX(false);
+  m_ogreWidget->constraintY(false);
+  m_ogreWidget->constraintZ(true);
+  ui->actionConstraintX->setChecked(false);
+  ui->actionConstraintY->setChecked(false);
+  ui->actionConstraintZ->setChecked(true);
+}
+
+void  MainWindow::on_actionSave_triggered()
+{
+  if (windowFilePath().isEmpty())
+    on_actionSaveAs_triggered();
+  else
+    {
+      DataManager::getSingleton()->saveProject(windowFilePath());
+      ui->statusBar->showMessage("Save done.");
+    }
+}
+
+void  MainWindow::on_actionNewProject_triggered()
+{
+  Entity * entity;
+
+  if (m_ogreWidget->isVisible())
+    {
+      m_ogreWidget->getSelection()->clearSelection();
+      m_ogreWidget->resetCamera();
+    }
+  m_entityModel->removeRows(0, m_entityModel->rowCount());
+  entity = new Entity("root");
+  m_entityModel->appendRow(QList<QStandardItem *>() << new EntityModelItem(entity) << new EntityModelItem(entity));
+  m_currentEntity = entity;
+  refreshData();
+  for (int i = 0; i < DataManager::getSingleton()->getEntityList()->size(); ++i)
+    delete DataManager::getSingleton()->getEntityList()->takeAt(i);
+  DataManager::getSingleton()->getEntityList()->append(entity);
+  setWindowFilePath("");
+}
+
+void  MainWindow::on_actionSaveAs_triggered()
+{
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), QDir::homePath(), tr("OCS files (*.ocs)"));
+
+  if (!fileName.isEmpty())
+    {
+      refreshData();
+      DataManager::getSingleton()->saveProject(fileName);
+      setWindowFilePath(fileName);
+      ui->statusBar->showMessage(fileName + " saved.");
+    }
+}
+
+void  MainWindow::on_actionOpen_triggered()
+{
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::homePath(), tr("OCS files (*.ocs)"));
+
+  if (!fileName.isEmpty())
+    {
+      DataManager::getSingleton()->openProject(fileName);
+      m_currentEntity = static_cast<EntityModelItem *>(m_entityModel->itemFromIndex(m_entityModel->index(0, 0)))->getEntity();
+      refreshData();
+      setWindowFilePath(fileName);
+      ui->statusBar->showMessage(fileName + " opened.");
+    }
+}
+
+void  MainWindow::on_actionResetCamera_triggered()
+{
+  m_ogreWidget->resetCamera();
+}
+

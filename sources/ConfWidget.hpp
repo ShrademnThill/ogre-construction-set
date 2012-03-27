@@ -26,6 +26,7 @@ private slots:
     void  on_editPathButton_clicked();
     void  on_buttonBox_accepted();
     void  on_buttonBox_rejected();
+    void  on_selectDirButton_clicked();
 
 private:
   Ui::ConfWidget *  ui;

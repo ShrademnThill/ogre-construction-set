@@ -65,7 +65,7 @@ Qt::ItemFlags ModelList::flags(const QModelIndex &index) const
   return (QAbstractTableModel::flags(index) | Qt::ItemIsEditable);
 }
 
-bool  ModelList::setData(const QModelIndex &index, const QVariant &value, int role)
+bool  ModelList::setData(QModelIndex const & index, const QVariant &value, int role)
 {
   if (index.isValid() && role == Qt::EditRole)
     {
@@ -113,6 +113,7 @@ void  ModelList::build(QString const & path, bool rec)
 {
   QDir dir(path);
 
+  beginResetModel();
   if (dir.exists() && rec)
     {
       QStringList   filters("*.mesh");
@@ -134,9 +135,12 @@ void  ModelList::build(QString const & path, bool rec)
         if (!fileInfoList.at(i).isDir())
           m_list.insert(0, Model(fileInfoList.at(i).filePath(), fileInfoList.at(i).fileName()));
     }
+  endResetModel();
 }
 
 void  ModelList::clearList()
 {
+  beginResetModel();
   m_list.clear();
+  endResetModel();
 }

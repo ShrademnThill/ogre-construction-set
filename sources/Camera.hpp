@@ -16,6 +16,7 @@ public:
   void        zoom(Ogre::Real delta);
   void        shift(Ogre::Real deltaX, Ogre::Real deltaY);
   void        rotate(Ogre::Real deltaX, Ogre::Real deltaY);
+  void        reset(Ogre::Real x = 0, Ogre::Real y = 0, Ogre::Real z = 0);
 
 private:
   Ogre::Camera *  m_camera;

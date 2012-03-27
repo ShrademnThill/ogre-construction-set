@@ -23,9 +23,7 @@ SOURCES += main.cpp \
     Entity.cpp \
     InstEntity.cpp \
     Camera.cpp \
-    Data.cpp \
     RessourcesPathList.cpp \
-    EntityList.cpp \
     EditPathDialog.cpp \
     EditEntityDialog.cpp \
     SelectionRenderListener.cpp \
@@ -35,7 +33,13 @@ SOURCES += main.cpp \
     InstItem.cpp \
     SelectionManager.cpp \
     ConstraintManager.cpp \
-    EditInstItemDialog.cpp
+    EditInstItemDialog.cpp \
+    AxisObject.cpp \
+    Item.cpp \
+    DataManager.cpp \
+    EntityGroup.cpp \
+    EntityModelItem.cpp \
+    GridObject.cpp
 
 HEADERS += MainWindow.hpp \
     OgreWidget.hpp \
@@ -46,9 +50,7 @@ HEADERS += MainWindow.hpp \
     Entity.hpp \
     InstEntity.hpp \
     Camera.hpp \
-    Data.hpp \
     RessourcesPathList.hpp \
-    EntityList.hpp \
     EditPathDialog.hpp \
     EditEntityDialog.hpp \
     SelectionRenderListener.hpp \
@@ -58,7 +60,13 @@ HEADERS += MainWindow.hpp \
     InstItem.hpp \
     SelectionManager.hpp \
     ConstraintManager.hpp \
-    EditInstItemDialog.hpp
+    EditInstItemDialog.hpp \
+    AxisObject.hpp \
+    Item.hpp \
+    DataManager.hpp \
+    EntityGroup.hpp \
+    EntityModelItem.hpp \
+    GridObject.hpp
 
 FORMS += \
     ConfWidget.ui \

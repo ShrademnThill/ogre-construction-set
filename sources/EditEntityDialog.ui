@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>178</width>
-    <height>90</height>
+    <width>261</width>
+    <height>155</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,39 +15,53 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <layout class="QFormLayout" name="formLayout_2">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+    <widget class="QLabel" name="nameLabel">
+     <property name="text">
+      <string>Name :</string>
      </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="nameLabel">
-       <property name="text">
-        <string>Name :</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="nameLineEdit"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="composedLabel">
-       <property name="text">
-        <string>Composed :</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QCheckBox" name="composedCheckBox"/>
-     </item>
-    </layout>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="nameLineEdit"/>
    </item>
    <item row="1" column="0">
+    <widget class="QLabel" name="composedLabel">
+     <property name="text">
+      <string>Composed :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QCheckBox" name="composedCheckBox">
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" rowspan="2">
+    <widget class="QListView" name="listView"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="addFilterButton">
+     <property name="text">
+      <string>Add filter</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QPushButton" name="deleteFilterButton">
+     <property name="text">
+      <string>Delete filter</string>
      </property>
     </widget>
    </item>

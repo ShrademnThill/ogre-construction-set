@@ -23,11 +23,11 @@
       </size>
      </property>
      <property name="currentRow">
-      <number>0</number>
+      <number>-1</number>
      </property>
      <item>
       <property name="text">
-       <string>Controls</string>
+       <string>Scene</string>
       </property>
      </item>
      <item>
@@ -47,35 +47,81 @@
      <property name="currentIndex">
       <number>2</number>
      </property>
-     <widget class="QWidget" name="controlsPage">
+     <widget class="QWidget" name="scenePage">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QGroupBox" name="groupMouseBox">
+        <widget class="QGroupBox" name="cameraBox">
          <property name="title">
-          <string>Mouse</string>
+          <string>Camera</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
-          <property name="fieldGrowthPolicy">
-           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-          </property>
+         <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
-           <widget class="QLabel" name="sensibilityLabel">
+           <widget class="QLabel" name="cameraDistanceLabel">
             <property name="text">
-             <string>Sensibility</string>
+             <string>Default camera distance :</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="sensibilityDoubleSpinBox"/>
+           <widget class="QDoubleSpinBox" name="cameraDistanceSpinBox">
+            <property name="maximum">
+             <double>10000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="constraintsBox">
          <property name="title">
-          <string>GroupBox</string>
+          <string>Constraints</string>
          </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="gridSpaceLabel">
+            <property name="text">
+             <string>Grid space :</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="gridSpaceSpinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>100000</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -89,6 +135,25 @@
      </widget>
      <widget class="QWidget" name="ressourcesPage">
       <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QGroupBox" name="modelPathBox">
+         <property name="title">
+          <string>Model Path</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="modelPathLineEdit"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="selectDirButton">
+            <property name="text">
+             <string>Select dir</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item>
         <widget class="QGroupBox" name="ressourcesPathsBox">
          <property name="title">

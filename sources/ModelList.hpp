@@ -12,14 +12,14 @@ public:
   ModelList(QStringList const & paths, QObject * parent = 0);
   ~ModelList(void);
 
-  int           rowCount(const QModelIndex &parent) const;
-  int           columnCount(const QModelIndex &parent) const;
-  QVariant      data(const QModelIndex &index, int role) const;
+  int           rowCount(QModelIndex const & parent) const;
+  int           columnCount(QModelIndex const & parent) const;
+  QVariant      data(QModelIndex const & index, int role) const;
   QVariant      headerData(int section, Qt::Orientation orientation, int role) const;
-  Qt::ItemFlags flags(const QModelIndex &index) const;
-  bool          setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-  bool          insertRows(int row, int count, const QModelIndex &index = QModelIndex());
-  bool          removeRows(int row, int count, const QModelIndex &index = QModelIndex());
+  Qt::ItemFlags flags(QModelIndex const & index) const;
+  bool          setData(QModelIndex const & index, const QVariant &value, int role = Qt::EditRole);
+  bool          insertRows(int row, int count, QModelIndex const & index = QModelIndex());
+  bool          removeRows(int row, int count, QModelIndex const & index = QModelIndex());
 
   QList<Model> const &  getList(void) const;
 
