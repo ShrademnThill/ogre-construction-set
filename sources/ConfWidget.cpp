@@ -14,9 +14,15 @@ ConfWidget::ConfWidget(QWidget *parent) :
 
   m_ressourcesPathModelList = new RessourcesPathList(DataManager::getSingleton()->getRessourcesPathList(), this);
   ui->pathTableView->setModel(m_ressourcesPathModelList);
+
   ui->modelPathLineEdit->setText(DataManager::getSingleton()->getModelPath());
+
   ui->cameraDistanceSpinBox->setValue(DataManager::getSingleton()->getDefaultCameraDistance());
+  ui->cameraLateralMovementSpinBox->setValue(DataManager::getSingleton()->getCameraLMoveMult());
+  ui->cameraZoomMovementSpinBox->setValue(DataManager::getSingleton()->getCameraZMoveMult());
+
   ui->gridSpaceSpinBox->setValue(DataManager::getSingleton()->getGridSpace());
+  ui->angleSnapeSpinBox->setValue(DataManager::getSingleton()->getSnapAngle());
 }
 
 ConfWidget::~ConfWidget()
@@ -70,7 +76,10 @@ void  ConfWidget::on_buttonBox_accepted()
   DataManager::getSingleton()->setRessourcesPathList(m_ressourcesPathModelList->getList());
   DataManager::getSingleton()->setModelPath(ui->modelPathLineEdit->text());
   DataManager::getSingleton()->setDefaultCameraDistance(ui->cameraDistanceSpinBox->value());
+  DataManager::getSingleton()->setCameraLMoveMult(ui->cameraLateralMovementSpinBox->value());
+  DataManager::getSingleton()->setCameraZMoveMult(ui->cameraZoomMovementSpinBox->value());
   DataManager::getSingleton()->setGridSpace(ui->gridSpaceSpinBox->value());
+  DataManager::getSingleton()->setSnapAngle(ui->angleSnapeSpinBox->value());
 }
 
 void  ConfWidget::on_buttonBox_rejected()
@@ -81,7 +90,10 @@ void  ConfWidget::on_buttonBox_rejected()
   ui->pathTableView->setModel(m_ressourcesPathModelList);
   ui->modelPathLineEdit->setText(DataManager::getSingleton()->getModelPath());
   ui->cameraDistanceSpinBox->setValue(DataManager::getSingleton()->getDefaultCameraDistance());
+  ui->cameraLateralMovementSpinBox->setValue(DataManager::getSingleton()->getCameraLMoveMult());
+  ui->cameraZoomMovementSpinBox->setValue(DataManager::getSingleton()->getCameraZMoveMult());
   ui->gridSpaceSpinBox->setValue(DataManager::getSingleton()->getGridSpace());
+  ui->angleSnapeSpinBox->setValue(DataManager::getSingleton()->getSnapAngle());
 }
 
 void  ConfWidget::on_selectDirButton_clicked()

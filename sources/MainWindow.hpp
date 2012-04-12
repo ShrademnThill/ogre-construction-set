@@ -21,8 +21,6 @@ public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
-  void  refreshData();
-
 private slots:
   void  on_actionSettings_triggered();
   void  on_actionLock_triggered(bool);
@@ -39,14 +37,20 @@ private slots:
   void  on_actionRenameGroup_triggered();
   void  on_actionDeleteGroup_triggered();
 
-  void  on_actionActiveGrid_triggered(bool checked);
+  void  on_actionSnapToGrid_triggered(bool checked);
+  void  on_actionSnapToAngle_triggered(bool checked);
   void  on_actionConstraintX_triggered(void);
   void  on_actionConstraintY_triggered(void);
   void  on_actionConstraintZ_triggered(void);
 
-  void  on_actionSave_triggered();
+  void  on_actionResetCamera_triggered();
 
-  void  on_currentEntityListView_doubleClicked(QModelIndex const & index);
+  void  on_actionNewProject_triggered();
+  void  on_actionOpen_triggered();
+  void  on_actionSave_triggered();
+  void  on_actionSaveAs_triggered();
+  void  on_actionExportScene_triggered();
+  void  on_actionImportProject_triggered();
 
   void  on_modelTreeView_customContextMenuRequested(QPoint const &);
   void  on_entityTreeView_customContextMenuRequested(QPoint const &);
@@ -54,6 +58,7 @@ private slots:
   void  on_nextToolButton_clicked();
   void  on_prevToolButton_clicked();
   void  on_currentEntityListView_clicked(const QModelIndex &index);
+  void  on_currentEntityListView_doubleClicked(QModelIndex const & index);
 
   void  on_ogreWidget_itemSelected();
   void  on_ogreWidget_itemUnselected();
@@ -62,13 +67,6 @@ private slots:
 
   void  updateItem();
 
-  void  on_actionNewProject_triggered();
-
-  void  on_actionSaveAs_triggered();
-
-  void  on_actionOpen_triggered();
-
-  void  on_actionResetCamera_triggered();
 
 protected:
   virtual QMenu * createPopupMenu();
@@ -76,6 +74,7 @@ protected:
 
 private:
   void  initWidget();
+  void  refreshData();
 
   Ui::MainWindow *  ui;
   OgreWidget *      m_ogreWidget;

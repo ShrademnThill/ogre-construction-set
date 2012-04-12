@@ -21,7 +21,8 @@ public:
 
   QPaintEngine *  paintEngine() const;
 
-  SelectionManager *  getSelection(void);
+  SelectionManager *    getSelection(void);
+  Ogre::SceneManager *  getScene(void);
 
 public slots:
   void  setBackgroundColor(QColor c);
@@ -34,7 +35,8 @@ public slots:
   void  constraintX(bool value);
   void  constraintY(bool value);
   void  constraintZ(bool value);
-  void  activeGrid(bool value);
+  void  snapToGrid(bool value);
+  void  snapToAngle(bool value);
 
   void  resetCamera(void);
 
@@ -81,10 +83,11 @@ private:
   SelectionBuffer * m_selectionBuffer;
   SelectionManager  m_selectionManager;
 
+  bool  m_snapeToGrid;
+  bool  m_snapeToAngle;
   bool  m_constraintedX;
   bool  m_constraintedY;
   bool  m_constraintedZ;
-  bool  m_gridActivated;
 
   Entity *  m_currentEntity;
 };

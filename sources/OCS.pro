@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui
+QT += core gui xml
 
 TARGET = OCS
 TEMPLATE = app
@@ -39,7 +39,8 @@ SOURCES += main.cpp \
     DataManager.cpp \
     EntityGroup.cpp \
     EntityModelItem.cpp \
-    GridObject.cpp
+    GridObject.cpp \
+    SceneXML.cpp
 
 HEADERS += MainWindow.hpp \
     OgreWidget.hpp \
@@ -66,7 +67,8 @@ HEADERS += MainWindow.hpp \
     DataManager.hpp \
     EntityGroup.hpp \
     EntityModelItem.hpp \
-    GridObject.hpp
+    GridObject.hpp \
+    SceneXML.hpp
 
 FORMS += \
     ConfWidget.ui \
@@ -89,8 +91,8 @@ win32: LIBS += -L$$PWD/../OgreSDK_vc9_v1-7-2/lib/release/ -lOgreMain
 win32: INCLUDEPATH += $$PWD/../OgreSDK_vc9_v1-7-2/include/OGRE
 win32: DEPENDPATH += $$PWD/../OgreSDK_vc9_v1-7-2/include/OGRE
 
-RESOURCES += \
-    data.qrc
+#RESOURCES += \
+#    data.qrc
 
 
 

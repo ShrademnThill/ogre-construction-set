@@ -20,10 +20,11 @@ OgreWidget::OgreWidget(QWidget * parent)
     m_oldPos(InvalidMousePoint),
     m_mouseButtonsPressed(0),
     m_selectionBuffer(0),
+    m_snapeToGrid(false),
+    m_snapeToAngle(false),
     m_constraintedX(false),
     m_constraintedY(true),
     m_constraintedZ(false),
-    m_gridActivated(false),
     m_currentEntity(0)
 {
   setAttribute(Qt::WA_OpaquePaintEvent);
@@ -53,6 +54,11 @@ QPaintEngine *  OgreWidget::paintEngine() const
 SelectionManager *  OgreWidget::getSelection(void)
 {
   return (&m_selectionManager);
+}
+
+Ogre::SceneManager *  OgreWidget::getScene(void)
+{
+  return (m_sceneManager);
 }
 
 void  OgreWidget::setBackgroundColor(QColor c)
@@ -146,9 +152,14 @@ void  OgreWidget::constraintZ(bool value)
     }
 }
 
-void  OgreWidget::activeGrid(bool value)
+void  OgreWidget::snapToGrid(bool value)
 {
-  m_gridActivated = value;
+  m_snapeToGrid = value;
+}
+
+void  OgreWidget::snapToAngle(bool value)
+{
+  m_snapeToAngle = value;
 }
 
 void  OgreWidget::resetCamera(void)
@@ -298,19 +309,40 @@ void  OgreWidget::mouseReleaseEvent(QMouseEvent * e)
       m_mouseButtonsPressed &= e->buttons();
       m_oldPos = QPoint(InvalidMousePoint);
 
-      if (m_gridActivated)
+      if (m_snapeToGrid)
         {
           Ogre::Vector3 pos = m_selectionManager.getPosition();
-          int gridSpace = DataManager::getSingleton()->getGridSpace();
+          int           gridSpace = DataManager::getSingleton()->getGridSpace();
 
-          pos.x = qFloor((pos.x + gridSpace / 2) / gridSpace) * gridSpace;
-          pos.y = qFloor((pos.y + gridSpace / 2) / gridSpace) * gridSpace;
-          pos.z = qFloor((pos.z + gridSpace / 2) / gridSpace) * gridSpace;
+          pos.x = qFloor((pos.x + gridSpace / 2.f) / gridSpace) * gridSpace;
+          pos.y = qFloor((pos.y + gridSpace / 2.f) / gridSpace) * gridSpace;
+          pos.z = qFloor((pos.z + gridSpace / 2.f) / gridSpace) * gridSpace;
           m_selectionManager.setPosition(pos.x, pos.y, pos.z);
           emit itemMoved();
-          update();
         }
+      if (m_snapeToAngle)
+        {
+          Ogre::Quaternion  orientation = m_selectionManager.getOrientation();
+          int               snapAngle = DataManager::getSingleton()->getSnapAngle();
 
+          if (m_constraintedX)
+            {
+              m_selectionManager.pitch(-orientation.getPitch());
+              m_selectionManager.pitch(Ogre::Degree(qFloor((orientation.getPitch().valueDegrees() + snapAngle / 2.f) / snapAngle) * snapAngle));
+            }
+          else if (m_constraintedY)
+            {
+              m_selectionManager.yaw(-orientation.getYaw());
+              m_selectionManager.yaw(Ogre::Degree(qFloor((orientation.getYaw().valueDegrees() + snapAngle / 2.f) / snapAngle) * snapAngle));
+            }
+          else if (m_constraintedZ)
+            {
+              m_selectionManager.roll(-orientation.getRoll());
+              m_selectionManager.roll(Ogre::Degree(qFloor((orientation.getRoll().valueDegrees() + snapAngle / 2.f) / snapAngle) * snapAngle));
+            }
+          emit itemMoved();
+        }
+      update();
       e->accept();
     }
   else
@@ -474,6 +506,9 @@ void  OgreWidget::initScene()
 
   node->attachObject(GridObject::createGrid(m_sceneManager, 1));
   node->scale(gridSpace, gridSpace, gridSpace);
+  constraintX(m_constraintedX);
+  constraintY(m_constraintedY);
+  constraintZ(m_constraintedZ);
   update();
 }
 

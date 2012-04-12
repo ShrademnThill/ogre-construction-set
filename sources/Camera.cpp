@@ -23,13 +23,18 @@ Ogre::Camera *  Camera::getCamera()
 
 void  Camera::zoom(Ogre::Real delta)
 {
-  m_zoom -= delta;// * m_zoom / 500.f;
-  m_camera->moveRelative(Ogre::Vector3(0, 0, -delta));
+  double temp;
+
+  temp = delta * DataManager::getSingleton()->getCameraZMoveMult() * m_zoom / DataManager::getSingleton()->getDefaultCameraDistance();
+  m_zoom -= temp;// * m_zoom / 500.f;
+  m_camera->moveRelative(Ogre::Vector3(0, 0, -temp));
 }
 
 void  Camera::shift(Ogre::Real deltaX, Ogre::Real deltaY)
 {
-  m_camera->moveRelative(Ogre::Vector3(deltaX, -deltaY, 0));
+  double mult = DataManager::getSingleton()->getCameraLMoveMult() * m_zoom / DataManager::getSingleton()->getDefaultCameraDistance();;
+
+  m_camera->moveRelative(Ogre::Vector3(deltaX * mult, -deltaY * mult, 0));
 }
 
 void  Camera::rotate(Ogre::Real deltaX, Ogre::Real deltaY)

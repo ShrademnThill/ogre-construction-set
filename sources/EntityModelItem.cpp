@@ -62,7 +62,7 @@ void  EntityModelItem::read(QDataStream & in)
   m_entity = 0;
   in >> v;
   if (v.toInt() != -1)
-    m_entity = DataManager::getSingleton()->getEntityList()->at(v.toInt());
+    m_entity = DataManager::getSingleton()->getEntityList().at(v.toInt());
   in >> v;
   m_name = v.toString();
   QStandardItem::read(in);
@@ -74,7 +74,7 @@ void  EntityModelItem::write(QDataStream & out) const
   int idx = -1;
 
   if (m_entity)
-    idx = DataManager::getSingleton()->getEntityList()->indexOf(m_entity);
+    idx = DataManager::getSingleton()->getEntityList().indexOf(m_entity);
 
   v.setValue<int>(idx);
   out << v;
