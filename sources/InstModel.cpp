@@ -1,11 +1,10 @@
+#include <QMessageBox>
 #include "InstModel.hpp"
 
-InstModel::InstModel(Model const & model, Ogre::SceneNode * node) :
+InstModel::InstModel(Model const & model) :
   m_model(model)
 {
   m_type = ModelType;
-  if (node)
-    load(node);
 }
 
 InstModel::~InstModel()
@@ -24,14 +23,22 @@ Model const &     InstModel::getModel() const
 
 void  InstModel::load(Ogre::SceneNode * node)
 {
-  Ogre::Entity * entity = node->getCreator()->createEntity(m_model.getPath().toStdString());
+  try
+  {
+    Ogre::Entity * entity = node->getCreator()->createEntity(m_model.getPath().toStdString());
 
-  m_root = node->createChildSceneNode();
-  m_root->getUserObjectBindings().setUserAny(Ogre::Any(static_cast<InstItem *>(this)));
-  m_root->attachObject(entity);
-  m_root->setPosition(m_position);
-  m_root->setOrientation(m_orientation);
-  m_root->setScale(m_scale);
+    m_root = node->createChildSceneNode();
+    m_root->getUserObjectBindings().setUserAny(Ogre::Any(static_cast<InstItem *>(this)));
+    m_root->attachObject(entity);
+    m_root->setPosition(m_position);
+    m_root->setOrientation(m_orientation);
+    m_root->setScale(m_scale);
+  }
+  catch (Ogre::Exception &)
+  {
+    QMessageBox::warning(0, "Instanciation Denied", m_model.getPath() + " not found.");
+    return ;
+  }
 }
 
 void  InstModel::unload(void)

@@ -6,13 +6,13 @@ AxisObject::AxisObject()
 {
 }
 
-Ogre::ManualObject *  AxisObject::createAxis(Ogre::SceneManager * scene, Ogre::String const & name, Ogre::Real scale)
+Ogre::ManualObject *  AxisObject::createAxis(Ogre::SceneManager * scene)
 {
   addMaterial("Axis", Ogre::ColourValue(1, 1, 1,.75), Ogre::SBT_TRANSPARENT_ALPHA);
 
-  Ogre::ManualObject * axis = scene->createManualObject(name);
+  Ogre::ManualObject * axis = scene->createManualObject();
 
-  Ogre::Real len = scale;
+  Ogre::Real len = 64;
   Ogre::Real scl = len * 0.1f;
   Ogre::Real loc = len / 2 + scl / 2;
   Ogre::Real fade = 0.5f;
@@ -20,10 +20,8 @@ Ogre::ManualObject *  AxisObject::createAxis(Ogre::SceneManager * scene, Ogre::S
 
   addBox(axis, Vector3(len, scl, scl), Vector3(loc, 0, 0), ColourValue(0, 0, solid, solid), (BOX_ALL & ~BOX_RIGHT));
   addBox(axis, Vector3(len, scl, scl), Vector3(-loc, 0, 0), ColourValue(0, 0, fade, fade), (BOX_ALL & ~BOX_LEFT));
-
   addBox(axis, Vector3(scl, len, scl), Vector3(0, loc, 0), ColourValue(0, solid, 0, solid), (BOX_ALL & ~BOX_BOT));
   addBox(axis, Vector3(scl, len, scl), Vector3(0, -loc, 0), ColourValue(0, fade, 0, fade), (BOX_ALL & ~BOX_TOP));
-
   addBox(axis, Vector3(scl, scl, len), Vector3(0, 0, loc), ColourValue(solid, 0, 0, solid), (BOX_ALL & ~BOX_BACK));
   addBox(axis, Vector3(scl, scl, len), Vector3(0, 0, -loc), ColourValue(fade, 0, 0, fade), (BOX_ALL & ~BOX_FRONT));
 

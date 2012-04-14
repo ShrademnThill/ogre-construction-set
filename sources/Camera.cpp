@@ -47,7 +47,7 @@ void  Camera::rotate(Ogre::Real deltaX, Ogre::Real deltaY)
 
 void  Camera::reset(Ogre::Real x, Ogre::Real y, Ogre::Real z)
 {
-  m_camera->setPosition(x + 1, y + 1, z - 1);
+  m_camera->setPosition(x + 1, y + 1, z + 1);
   m_camera->lookAt(x, y, z);
   m_camera->setPosition(x, y, z);
   m_zoom = DataManager::getSingleton()->getDefaultCameraDistance();

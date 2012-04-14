@@ -11,21 +11,21 @@ SelectionManager::~SelectionManager()
 
 Ogre::Vector3 SelectionManager::getPosition(void) const
 {
-  if (m_selection.size() == 1)
-    return (m_selection[0]->getRoot()->getPosition());
+  if (!m_selection.isEmpty())
+    return (m_selection.first()->getRoot()->getPosition());
   return (m_position);
 }
 
 Ogre::Quaternion  SelectionManager::getOrientation(void) const
 {
-  if (m_selection.size() == 1)
+  if (!m_selection.isEmpty())
     return (m_selection[0]->getRoot()->getOrientation());
   return (Ogre::Quaternion());
 }
 
 Ogre::Vector3 SelectionManager::getScale(void) const
 {
-  if (m_selection.size() == 1)
+  if (!m_selection.isEmpty())
     return (m_selection[0]->getRoot()->getScale());
   return (Ogre::Vector3(1, 1, 1));
 }
@@ -51,44 +51,38 @@ void  SelectionManager::setPosition(double x, double y, double z)
 
 void  SelectionManager::setOrientation(double w, double x, double y, double z)
 {
-  if (m_selection.size() == 1)
+  if (!m_selection.isEmpty())
     m_selection[0]->getRoot()->setOrientation(w, x, y, z);
 }
 
 void  SelectionManager::setScale(double x, double y, double z)
 {
-  if (m_selection.size() == 1)
-    m_selection[0]->getRoot()->setScale(x, y, z);
-  else
-    for (int i = 0; i < m_selection.size(); ++i)
-      m_selection[i]->getRoot()->scale(x, y, z);
+  for (int i = 0; i < m_selection.size(); ++i)
+    m_selection[i]->getRoot()->scale(x, y, z);
 }
 
 void  SelectionManager::translate(double x, double y, double z)
 {
-  if (m_selection.size() == 1)
-    m_selection[0]->getRoot()->translate(x, y, z);
-  else
-    for (int i = 0; i < m_selection.size(); ++i)
-      m_selection[i]->getRoot()->translate(x, y, z);
+  for (int i = 0; i < m_selection.size(); ++i)
+    m_selection[i]->getRoot()->translate(x, y, z);
 }
 
 void  SelectionManager::pitch(Ogre::Radian const & angle)
 {
-  if (m_selection.size() == 1)
-    m_selection[0]->getRoot()->pitch(angle);
+  for (int i = 0; i < m_selection.size(); ++i)
+    m_selection[i]->getRoot()->pitch(angle);
 }
 
 void  SelectionManager::yaw(Ogre::Radian const & angle)
 {
-  if (m_selection.size() == 1)
-    m_selection[0]->getRoot()->yaw(angle);
+  for (int i = 0; i < m_selection.size(); ++i)
+    m_selection[i]->getRoot()->yaw(angle);
 }
 
 void  SelectionManager::roll(Ogre::Radian const & angle)
 {
-  if (m_selection.size() == 1)
-    m_selection[0]->getRoot()->roll(angle);
+  for (int i = 0; i < m_selection.size(); ++i)
+    m_selection[i]->getRoot()->roll(angle);
 }
 
 void  SelectionManager::addItem(InstItem * item)

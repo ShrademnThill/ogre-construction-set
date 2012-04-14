@@ -10,7 +10,7 @@ MaterialSwitcher::~MaterialSwitcher()
 }
 
 Ogre::Technique * MaterialSwitcher::handleSchemeNotFound(unsigned short schemeIndex, const Ogre::String & schemeName,
-                                                  Ogre::Material *originalMaterial, unsigned short lodIndex,
+                                                  Ogre::Material * originalMaterial, unsigned short lodIndex,
                                                   const Ogre::Renderable *rend)
 {
   if(rend)
@@ -18,6 +18,7 @@ Ogre::Technique * MaterialSwitcher::handleSchemeNotFound(unsigned short schemeIn
       if(typeid(*rend) == typeid(Ogre::SubEntity))
         {
           const Ogre::SubEntity *subEntity = static_cast<const Ogre::SubEntity *>(rend);
+
           if(mLastEntity == subEntity->getParent()->getName())
             {
               const_cast<Ogre::SubEntity *>(subEntity)->setCustomParameter(1, Ogre::Vector4(mCurrentColor.r, mCurrentColor.g, mCurrentColor.b, 1.0));
@@ -25,6 +26,7 @@ Ogre::Technique * MaterialSwitcher::handleSchemeNotFound(unsigned short schemeIn
           else
             {
               Ogre::ResourcePtr res = Ogre::MaterialManager::getSingleton().load("PlainColor", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
               mLastTechnique = static_cast<Ogre::MaterialPtr>(res)->getTechnique(0);
 
               getNextColor();
@@ -42,6 +44,7 @@ Ogre::Technique * MaterialSwitcher::handleSchemeNotFound(unsigned short schemeIn
 const Ogre::String &  MaterialSwitcher::getEntityName(const Ogre::ColourValue &color) const
 {
   ColorMapConstIter iter = mColorDict.find(color);
+
   if(iter != mColorDict.end())
     return (*iter).second;
   else
@@ -53,9 +56,6 @@ void MaterialSwitcher::getNextColor()
   Ogre::ARGB color = mCurrentColor.getAsARGB();
   color++;
   mCurrentColor.setAsARGB(color);
-  // Alternatively, for an easier to interpret debug overlay with an
-  // increased risk of dictionary collision:
-  // mCurrentColor.setAsARGB(Ogre::Math::UnitRandom()*0x00FFFFFF + 0xFF000000);
 }
 
 void MaterialSwitcher::reset()

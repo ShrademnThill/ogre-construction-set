@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
   QApplication a(argc, argv);
 
   QDir::setCurrent(a.applicationDirPath());
-  qsrand(0);
+  qsrand((uint)&a);
 
   a.setOrganizationName("Shrademn'Company");
   a.setApplicationName("OCS");

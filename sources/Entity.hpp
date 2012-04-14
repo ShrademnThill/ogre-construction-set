@@ -48,4 +48,7 @@ private:
   QStringList         m_tags;
 };
 
+QDataStream & operator<<(QDataStream & out, Entity const & entity);
+QDataStream & operator>>(QDataStream & in, Entity & entity);
+
 #endif // ENTITY_HPP

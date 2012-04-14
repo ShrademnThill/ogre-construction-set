@@ -7,7 +7,7 @@
 class InstModel : public InstItem
 {
 public:
-  InstModel(Model const & model, Ogre::SceneNode * node);
+  InstModel(Model const & model);
   ~InstModel();
 
   Model const &     getModel() const;

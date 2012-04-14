@@ -87,11 +87,12 @@ void  OgreWidget::setCurrentEntity(Entity * entity)
     }
 }
 
-void  OgreWidget::selectItem(InstItem * item)
+void  OgreWidget::selectItem(InstItem * item, bool multiple)
 {
   if (!item->getRoot())
     return ;
-  m_selectionManager.clearSelection();
+  if (!multiple)
+    m_selectionManager.clearSelection();
   m_selectionManager.addItem(item);
   emit itemSelected();
   update();
@@ -263,7 +264,7 @@ void  OgreWidget::mouseMoveEvent(QMouseEvent * e)
 
               if (result.first && oldResult.first)
                 {
-                  Ogre::Vector3               point;
+                  Ogre::Vector3 point;
 
                   point = oldRay.getPoint(oldResult.second) - ray.getPoint(result.second);
                   m_selectionManager.translate(point.x, point.y, point.z);
@@ -288,7 +289,10 @@ void  OgreWidget::mousePressEvent(QMouseEvent * e)
     {
       if (e->button() == Qt::LeftButton)
         {
-          mouseSelect(e->pos());
+          if (e->modifiers() == Qt::ControlModifier)
+            mouseSelect(e->pos(), false);
+          else
+            mouseSelect(e->pos(), false);
           m_mouseButtonsPressed |= Qt::LeftButton;
         }
       if (e->button() == Qt::MiddleButton)
@@ -385,23 +389,21 @@ void  OgreWidget::keyReleaseEvent(QKeyEvent * e)
   e->ignore();
 }
 
-/*
-  TODO:
-    -Implementer la selection de multiples objets.
-*/
-
-void  OgreWidget::mouseSelect(QPoint const & pos)
+void  OgreWidget::mouseSelect(QPoint const & pos, bool multiple)
 {
-//  Ogre::Real x = pos.x() / (float)width();
-//  Ogre::Real y = pos.y() / (float)height();
+  /*
+    Apercu de ce que pourrait donner d'une selection par volume.
 
-//  Ogre::Ray ray = m_camera->getCamera()->getCameraToViewportRay(x, y);
-//  Ogre::RaySceneQuery * query = m_sceneManager->createRayQuery(ray);
-//  Ogre::RaySceneQueryResult & queryResult = query->execute();
-//  Ogre::RaySceneQueryResult::iterator queryResultIterator = queryResult.begin();
-//  //Ogre::PlaneBoundedVolume volume = m_camera->getCameraToViewportBoxVolume();
-//  //Ogre::PlaneBoundedVolumeListSceneQuery * query = m_sceneManager->createPlaneBoundedVolumeQuery(volume);
-//  //Ogre::SceneQueryResult & queryResult = query->execute();
+  Ogre::Real x = pos.x() / (float)width();
+  Ogre::Real y = pos.y() / (float)height();
+
+  Ogre::Ray ray = m_camera->getCamera()->getCameraToViewportRay(x, y);
+  Ogre::RaySceneQuery * query = m_sceneManager->createRayQuery(ray);
+  Ogre::RaySceneQueryResult & queryResult = query->execute();
+  Ogre::RaySceneQueryResult::iterator queryResultIterator = queryResult.begin();
+  Ogre::PlaneBoundedVolume volume = m_camera->getCameraToViewportBoxVolume();
+  Ogre::PlaneBoundedVolumeListSceneQuery * query = m_sceneManager->createPlaneBoundedVolumeQuery(volume);
+  Ogre::SceneQueryResult & queryResult = query->execute();*/
 
   Ogre::Entity *  selectedEntity = m_selectionBuffer->OnSelectionClick(pos.x(), pos.y());
 
@@ -411,7 +413,7 @@ void  OgreWidget::mouseSelect(QPoint const & pos)
 
       while (node->getParentSceneNode() != m_sceneManager->getRootSceneNode())
         node = node->getParentSceneNode();
-      selectItem(Ogre::any_cast<InstItem *>(node->getUserObjectBindings().getUserAny()));
+      selectItem(Ogre::any_cast<InstItem *>(node->getUserObjectBindings().getUserAny()), multiple);
     }
   else
     unselectItem();
@@ -501,10 +503,11 @@ void  OgreWidget::initScene()
   Ogre::SceneNode * node = m_sceneManager->getRootSceneNode()->createChildSceneNode("grid");
 
   m_sceneManager->setAmbientLight(Ogre::ColourValue(1,1,1));
+  m_sceneManager->getRootSceneNode()->attachObject(AxisObject::createAxis(m_sceneManager));
 
   Ogre::Real gridSpace = DataManager::getSingleton()->getGridSpace();
 
-  node->attachObject(GridObject::createGrid(m_sceneManager, 1));
+  node->attachObject(GridObject::createGrid(m_sceneManager));
   node->scale(gridSpace, gridSpace, gridSpace);
   constraintX(m_constraintedX);
   constraintY(m_constraintedY);

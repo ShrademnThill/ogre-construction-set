@@ -8,7 +8,7 @@ class GridObject
 public:
   GridObject();
 
-  static Ogre::ManualObject *  createGrid(Ogre::SceneManager * scene, Ogre::Real scale);
+  static Ogre::ManualObject *  createGrid(Ogre::SceneManager * scene);
 
 private:
   static void  addMaterial(Ogre::String const & mat, Ogre::ColourValue const & clr, Ogre::SceneBlendType sbt);

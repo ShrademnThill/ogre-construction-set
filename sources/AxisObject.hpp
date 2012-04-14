@@ -20,7 +20,7 @@ public:
 
   AxisObject();
 
-  static Ogre::ManualObject *  createAxis(Ogre::SceneManager * scene, Ogre::String const & name, Ogre::Real scale);
+  static Ogre::ManualObject *  createAxis(Ogre::SceneManager * scene);
 
 private:
   static void  addMaterial(Ogre::String const & mat, Ogre::ColourValue const & clr, Ogre::SceneBlendType sbt);

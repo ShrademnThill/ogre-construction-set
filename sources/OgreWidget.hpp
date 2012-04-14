@@ -27,7 +27,7 @@ public:
 public slots:
   void  setBackgroundColor(QColor c);
   void  setCurrentEntity(Entity * entity);
-  void  selectItem(InstItem * item);
+  void  selectItem(InstItem * item, bool multiple = false);
   void  unselectItem(void);
   void  addItem(Model const & model);
   void  addItem(Entity & entity);
@@ -65,7 +65,7 @@ private:
   void  initResources();
   void  initScene();
 
-  void  mouseSelect(QPoint const & pos);
+  void  mouseSelect(QPoint const & pos, bool multiple = false);
   void  deleteSelection();
 
   static const QPoint InvalidMousePoint;

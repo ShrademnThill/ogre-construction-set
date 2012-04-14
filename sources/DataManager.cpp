@@ -169,71 +169,7 @@ void  DataManager::importProject(QString const & fileName)
   for (int i = 0; i < rowCount; ++i)
     m_entityList.append(new Entity);
   for (int idx = offset; idx < m_entityList.size(); ++idx)
-    {
-      Entity *    entity;
-      QString     strTemp;
-      QStringList strListTemp;
-      int         intTemp;
-      bool        boolTemp;
-
-      entity = m_entityList[idx];
-      in >> strTemp;
-      entity->setName(strTemp);
-      in >> intTemp;
-      entity->setInstNothingProbability(intTemp);
-      in >> strListTemp;
-      entity->setTags(strListTemp);
-      in >> boolTemp;
-      entity->setComposed(boolTemp);
-      in >> intTemp;
-      for (int i = 0; i < intTemp; ++i)
-        {
-          int           temp;
-
-          in >> temp;
-          entity->createEntity(*m_entityList[temp + offset], 0);
-          in >> temp;
-          entity->getEntityList().last()->setInstanciationProbability(temp);
-          in >> strListTemp;
-          entity->getEntityList().last()->setTags(strListTemp);
-          in >> entity->getEntityList().last()->getPosition().x;
-          in >> entity->getEntityList().last()->getPosition().y;
-          in >> entity->getEntityList().last()->getPosition().z;
-          in >> entity->getEntityList().last()->getOrientation().w;
-          in >> entity->getEntityList().last()->getOrientation().x;
-          in >> entity->getEntityList().last()->getOrientation().y;
-          in >> entity->getEntityList().last()->getOrientation().z;
-          in >> entity->getEntityList().last()->getScale().x;
-          in >> entity->getEntityList().last()->getScale().y;
-          in >> entity->getEntityList().last()->getScale().z;
-        }
-      in >> intTemp;
-      for (int i = 0; i < intTemp; ++i)
-        {
-          int     temp;
-          Model   model;
-
-          in >> strTemp;
-          model.setName(strTemp);
-          in >> strTemp;
-          model.setPath(strTemp);
-          entity->createModel(model, 0);
-          in >> temp;
-          entity->getModelList().last()->setInstanciationProbability(temp);
-          in >> strListTemp;
-          entity->getModelList().last()->setTags(strListTemp);
-          in >> entity->getModelList().last()->getPosition().x;
-          in >> entity->getModelList().last()->getPosition().y;
-          in >> entity->getModelList().last()->getPosition().z;
-          in >> entity->getModelList().last()->getOrientation().w;
-          in >> entity->getModelList().last()->getOrientation().x;
-          in >> entity->getModelList().last()->getOrientation().y;
-          in >> entity->getModelList().last()->getOrientation().z;
-          in >> entity->getModelList().last()->getScale().x;
-          in >> entity->getModelList().last()->getScale().y;
-          in >> entity->getModelList().last()->getScale().z;
-        }
-    }
+    in >> *m_entityList[idx];
   in >> rowCount;
   readTree(m_entityModel.invisibleRootItem(), rowCount, in, offset);
 
@@ -256,69 +192,7 @@ void  DataManager::openProject(QString const & fileName)
   for (int i = 0; i < rowCount; ++i)
     m_entityList.append(new Entity);
   foreach (Entity * entity, m_entityList)
-    {
-      QString     strTemp;
-      QStringList strListTemp;
-      int         intTemp;
-      bool        boolTemp;
-
-      in >> strTemp;
-      entity->setName(strTemp);
-      in >> intTemp;
-      entity->setInstNothingProbability(intTemp);
-      in >> strListTemp;
-      entity->setTags(strListTemp);
-      in >> boolTemp;
-      entity->setComposed(boolTemp);
-      in >> intTemp;
-      for (int i = 0; i < intTemp; ++i)
-        {
-          int           temp;
-
-          in >> temp;
-          entity->createEntity(*m_entityList[temp], 0);
-          in >> temp;
-          entity->getEntityList().last()->setInstanciationProbability(temp);
-          in >> strListTemp;
-          entity->getEntityList().last()->setTags(strListTemp);
-          in >> entity->getEntityList().last()->getPosition().x;
-          in >> entity->getEntityList().last()->getPosition().y;
-          in >> entity->getEntityList().last()->getPosition().z;
-          in >> entity->getEntityList().last()->getOrientation().w;
-          in >> entity->getEntityList().last()->getOrientation().x;
-          in >> entity->getEntityList().last()->getOrientation().y;
-          in >> entity->getEntityList().last()->getOrientation().z;
-          in >> entity->getEntityList().last()->getScale().x;
-          in >> entity->getEntityList().last()->getScale().y;
-          in >> entity->getEntityList().last()->getScale().z;
-        }
-      in >> intTemp;
-      for (int i = 0; i < intTemp; ++i)
-        {
-          int     temp;
-          Model   model;
-
-          in >> strTemp;
-          model.setName(strTemp);
-          in >> strTemp;
-          model.setPath(strTemp);
-          entity->createModel(model, 0);
-          in >> temp;
-          entity->getModelList().last()->setInstanciationProbability(temp);
-          in >> strListTemp;
-          entity->getModelList().last()->setTags(strListTemp);
-          in >> entity->getModelList().last()->getPosition().x;
-          in >> entity->getModelList().last()->getPosition().y;
-          in >> entity->getModelList().last()->getPosition().z;
-          in >> entity->getModelList().last()->getOrientation().w;
-          in >> entity->getModelList().last()->getOrientation().x;
-          in >> entity->getModelList().last()->getOrientation().y;
-          in >> entity->getModelList().last()->getOrientation().z;
-          in >> entity->getModelList().last()->getScale().x;
-          in >> entity->getModelList().last()->getScale().y;
-          in >> entity->getModelList().last()->getScale().z;
-        }
-    }
+    in >> *entity;
   in >> rowCount;
   readTree(m_entityModel.invisibleRootItem(), rowCount, in);
 
@@ -353,47 +227,7 @@ void  DataManager::saveProject(QString const & fileName)
 
   out << m_entityList.size();
   for (int i = 0; i < m_entityList.size(); ++i)
-    {
-      out << m_entityList[i]->getName();
-      out << m_entityList[i]->getInstNothingProbability();
-      out << m_entityList[i]->getTags();
-      out << m_entityList[i]->isComposed();
-      out << m_entityList[i]->getEntityList().size();
-      foreach (InstEntity * instEntity, m_entityList[i]->getEntityList())
-        {
-          out << m_entityList.indexOf(&instEntity->getEntity());
-          out << instEntity->getInstanciationProbability();
-          out << instEntity->getTags();
-          out << instEntity->getPosition().x;
-          out << instEntity->getPosition().y;
-          out << instEntity->getPosition().z;
-          out << instEntity->getOrientation().w;
-          out << instEntity->getOrientation().x;
-          out << instEntity->getOrientation().y;
-          out << instEntity->getOrientation().z;
-          out << instEntity->getScale().x;
-          out << instEntity->getScale().y;
-          out << instEntity->getScale().z;
-        }
-      out << m_entityList[i]->getModelList().size();
-      foreach (InstModel * instModel,  m_entityList[i]->getModelList())
-        {
-          out << instModel->getModel().getName();
-          out << instModel->getModel().getPath();
-          out << instModel->getInstanciationProbability();
-          out << instModel->getTags();
-          out << instModel->getPosition().x;
-          out << instModel->getPosition().y;
-          out << instModel->getPosition().z;
-          out << instModel->getOrientation().w;
-          out << instModel->getOrientation().x;
-          out << instModel->getOrientation().y;
-          out << instModel->getOrientation().z;
-          out << instModel->getScale().x;
-          out << instModel->getScale().y;
-          out << instModel->getScale().z;
-        }
-    }
+    out << *m_entityList[i];
   out << m_entityModel.rowCount();
   writeTree(m_entityModel.invisibleRootItem(), out);
 

@@ -389,8 +389,9 @@ void  MainWindow::on_actionSave_triggered()
     on_actionSaveAs_triggered();
   else
     {
+      refreshData();
       DataManager::getSingleton()->saveProject(windowFilePath());
-      ui->statusBar->showMessage("Save done.");
+      ui->statusBar->showMessage(windowFilePath() + " saved.");
     }
 }
 
