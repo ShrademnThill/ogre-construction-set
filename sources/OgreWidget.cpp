@@ -94,6 +94,11 @@ void  OgreWidget::selectItem(InstItem * item, bool multiple)
   if (!multiple)
     m_selectionManager.clearSelection();
   m_selectionManager.addItem(item);
+
+  Ogre::SceneNode * node = m_sceneManager->getSceneNode("grid");
+
+  node->setPosition(m_selectionManager.getPosition());
+
   emit itemSelected();
   update();
 }
@@ -101,6 +106,14 @@ void  OgreWidget::selectItem(InstItem * item, bool multiple)
 void  OgreWidget::unselectItem(void)
 {
   m_selectionManager.clearSelection();
+
+  if (m_sceneManager)
+    {
+      Ogre::SceneNode * node = m_sceneManager->getSceneNode("grid");
+
+      node->setPosition(0, 0, 0);
+    }
+
   emit itemUnselected();
   update();
 }
@@ -514,13 +527,3 @@ void  OgreWidget::initScene()
   constraintZ(m_constraintedZ);
   update();
 }
-
-/*
-  TODO:
-    -Surcharger la methode addItem pour ajouter des lights.
-*/
-
-//void  OgreWidget::addItem(Light const & entity)
-//{
-//  update();
-//}

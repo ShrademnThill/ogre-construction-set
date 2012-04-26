@@ -238,6 +238,8 @@ QDataStream & operator>>(QDataStream & in, Entity & entity)
       int           temp;
 
       in >> temp;
+      if (temp < 0 || temp >= entityList.size())
+        temp = 0;
       entity.createEntity(*entityList[temp], 0);
       in >> temp;
       entity.getEntityList().last()->setInstanciationProbability(temp);
